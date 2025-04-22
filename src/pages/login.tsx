@@ -1,5 +1,5 @@
-import {useState, FormEvent} from 'react'
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import {useState, FormEvent, useEffect} from 'react'
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { useAuth } from '../context/AuthContext';
 import {useNavigate} from 'react-router-dom';
 import {auth} from '../config/firebase';
@@ -10,10 +10,12 @@ const LoginPage = () => {
     const [error, setError] = useState("");
     const {currentUser} = useAuth();
     const navigate = useNavigate();
-    if(currentUser){
-        alert("Already logged in"); 
-        return;
-    }
+    useEffect(() => {
+        if(currentUser){
+            console.log("User is already logged in");
+            navigate("/");
+        }
+    }, [currentUser, navigate]);
     const handleLogin = async (e: FormEvent) => {
         e.preventDefault();
         try{
@@ -42,7 +44,7 @@ const LoginPage = () => {
                 <button type="submit">Login</button>
 
             </form>
-            <p>Don't have an account? <a href="/register">Register</a></p>
+            <p>Don't have an account? <a href="/register" onClick={() => navigate("/RegisterPage")}>Register</a></p>
             <p>Forgot password? <a href="/forgot-password">Reset Password</a></p>
         </div>
 

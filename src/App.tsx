@@ -4,6 +4,7 @@ import './App.css'
 import Navbar from './components/navbar'
 import HomePage from './pages/home';
 import LoginPage from './pages/login';
+import RegisterPage from "./pages/register.tsx";
 function App() {
   return (
     <Router>
@@ -13,6 +14,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
               </Routes>
             </main>
       </div>
