@@ -1,34 +1,20 @@
 import { collection, addDoc, doc, updateDoc, getDoc, query, where, getDocs, arrayUnion, Timestamp, setDoc } from 'firebase/firestore';
-import { db } from '../config/firebase';
 import {firestore} from '../config/firebase';
-import { useAuth } from '../context/AuthContext';
-import { User } from 'firebase/auth';
-export interface Message {
-    id: string,
-    text: string,
-    senderId: string,
-    createdAt: Timestamp,
-}
-export interface Room {
-    name: string, 
-    description: string,
-    createdAt: Timestamp,
-    createdBy: string,
-    isPrivate: boolean,
-    messages?: Message[],
-}
+import { User } from '../common/interfaces';
+import {Room, Message} from '../common/interfaces';
 
-export const createRoom = async (room: Room, currentUser: User | null) => {
+export const createRoom = async (room: Room, userMetadata: User | null) => {
     try {
-        if (currentUser && currentUser) {
+        if (userMetadata && userMetadata) {
             const roomRef = await addDoc(collection(firestore, 'rooms'), room);
-            const memberRef = doc(firestore, 'rooms', roomRef.id, "members", currentUser.uid);
+            const memberRef = doc(firestore, 'rooms', roomRef.id, "members", userMetadata.uid);
             await setDoc(memberRef, {
-                uid: currentUser.uid,
+                uid: userMetadata.uid,
                 role: "admin",
                 joinedAt: Timestamp.now(),
         
         });
+            userMetadata.chatrooms?.push(roomRef.id);
             return roomRef.id;
         }
 

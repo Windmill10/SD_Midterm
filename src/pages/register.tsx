@@ -1,11 +1,15 @@
 import { FormEvent, useState } from 'react';
 import {useNavigate} from "react-router-dom";
 import {createUserWithEmailAndPassword} from "firebase/auth";
-import {auth} from '../config/firebase';
+import {setDoc, doc} from "firebase/firestore";
+import {firestore} from "../config/firebase";
+import {auth} from "../config/firebase";
+import {User} from "../common/interfaces.tsx";
 const RegisterPage = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [username, setUsername] = useState("");
     const navigate = useNavigate();
     const handleRegister = async (e: FormEvent) => {
         e.preventDefault();
@@ -16,7 +20,17 @@ const RegisterPage = () => {
         try {
             // Registration logic here
             console.log("Registering user with email:", email);
-            await createUserWithEmailAndPassword(auth, email, password);
+            const userCredential =  await createUserWithEmailAndPassword(auth, email, password);
+            const user: User = {
+              uid: userCredential.user.uid,
+              displayName: username,
+              description: "",
+              email: userCredential.user.email || "",
+              photoURL: "",
+              friends: [],
+              chatrooms: [],
+            }
+            await setDoc(doc(firestore, "users", user.uid), user);
             navigate("/");
         } catch (error) {
             console.error("Error registering user:", error);
@@ -48,6 +62,13 @@ const RegisterPage = () => {
                     onChange={(e => setConfirmPassword(e.target.value))}
                     required
                 />
+              <input
+                type="username"
+                placeholder="Username"
+                value={username}
+                onChange={(e => setUsername(e.target.value))}
+                required
+              />
                 <button type="submit">Register</button>
           </form>
       </div>
