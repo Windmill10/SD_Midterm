@@ -7,7 +7,6 @@ import {auth} from '../config/firebase';
 const LoginPage = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
     const {currentUser} = useAuth();
     const navigate = useNavigate();
     useEffect(() => {
@@ -22,7 +21,6 @@ const LoginPage = () => {
             await signInWithEmailAndPassword(auth, email, password);
             navigate("/");
         } catch(error: unknown) {
-            setError("Invalid email or password");
             console.log(error)
         } 
     }
@@ -44,7 +42,7 @@ const LoginPage = () => {
                 <button type="submit">Login</button>
 
             </form>
-            <p>Don't have an account? <a href="/register" onClick={() => navigate("/RegisterPage")}>Register</a></p>
+            <p>Don't have an account? <a href="/register" onClick={() => navigate("/register")}>Register</a></p>
             <p>Forgot password? <a href="/forgot-password">Reset Password</a></p>
         </div>
 

@@ -84,3 +84,18 @@ Bonus Components (at most 10%)
 - Unsend message (3%)
 - Search for message (3%)
 - Send gif from Tenor API (3%)
+
+/rooms
+  /{roomId}
+    - name: string
+    - description: string
+    - createdAt: timestamp
+    - createdBy: userId
+    - isPrivate: boolean
+    /members
+      /{userId}: true
+    /messages
+      /{messageId}
+        - text: string
+        - senderId: userId
+        - timestamp: timestamp
