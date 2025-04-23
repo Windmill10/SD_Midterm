@@ -27,7 +27,6 @@ const MessagePage = () => {
 
     fetchUserMetadata();
   }, [currentUser]);
-  console.log("currentUserMetadata", userMetadata);
   if(!currentUser) {
     return <div>Please login to see this page</div>
   }
@@ -46,7 +45,7 @@ const MessagePage = () => {
       {userMetadata && <p>Welcome, {userMetadata.email}</p>}
       <button onClick={() => currentUser && createRoom(testRoom, userMetadata)}>Create Room</button>
       <AddFriend />
-
+      {userMetadata && <Chatrooms {...userMetadata} />}
     </div>
   )
 }

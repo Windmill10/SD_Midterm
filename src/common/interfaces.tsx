@@ -20,7 +20,7 @@ export interface User {
   displayName: string,
   description: string,
   email: string,
-  chatrooms?: string[],
+  chatrooms: string[],
   photoURL: string,
-  friends?: string[],
+  friends: string[],
 }

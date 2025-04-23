@@ -18,6 +18,7 @@ export const findUserByEmail = async (email: string) => {
         photoURL: userData.photoURL || '',
         description: userData.description || '',
         friends: userData.friends || [],
+        chatrooms: userData.chatrooms || [],
         // Add any other fields from your User interface
       };
         console.log("User found:", user);

@@ -3,9 +3,9 @@ import {firestore} from '../config/firebase';
 import { User } from '../common/interfaces';
 import {Room, Message} from '../common/interfaces';
 
-export const createRoom = async (room: Room, userMetadata: User | null) => {
+export const createRoom = async (room: Room, userMetadata: User) => {
     try {
-        if (userMetadata && userMetadata) {
+        if (userMetadata) {
             const roomRef = await addDoc(collection(firestore, 'rooms'), room);
             const memberRef = doc(firestore, 'rooms', roomRef.id, "members", userMetadata.uid);
             await setDoc(memberRef, {
@@ -14,7 +14,13 @@ export const createRoom = async (room: Room, userMetadata: User | null) => {
                 joinedAt: Timestamp.now(),
         
         });
-            userMetadata.chatrooms?.push(roomRef.id);
+
+
+            const userRef = doc(firestore, 'users', userMetadata.uid);
+            await updateDoc(userRef, {
+                chatrooms: arrayUnion(roomRef.id),
+            });
+
             return roomRef.id;
         }
 
