@@ -18,6 +18,7 @@ const MessagePage = () => {
 
   const handleCreateRoom = async () => {
     const testRoom: Room = {
+      roomId: "",
       name: roomName,
       description: roomDescription,
       createdAt: Timestamp.now(),
@@ -79,7 +80,3 @@ const MessagePage = () => {
 }
 export default MessagePage;
 
-// consisting components of
-// Chat history
-// Chat input 
-// Other info about the chat

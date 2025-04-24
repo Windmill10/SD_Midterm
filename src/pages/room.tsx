@@ -3,16 +3,17 @@ import { useParams } from "react-router-dom";
 import { doc, getDoc } from 'firebase/firestore';
 import { firestore } from "../config/firebase";
 import { Room } from "../common/interfaces";
-import { findUserByEmail } from "../common/findUser";
-import { addMemberToRoom } from "../services/roomService";
+import { addMemberToRoomByEmail } from "../services/roomService";
+import MessageInput from "../components/chat/messageinput";
+import { useUserMetadata } from "../common/findUser";
 import "./chat.css";
 
 const RoomPage = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const [newMemberEmail, setNewMemberEmail] = useState("");
   const [room, setRoom] = useState<Room | null>(null);
-  const [loading, setLoading] = useState(true);
-
+  const [loadingRooms, setLoadingRooms] = useState(true);
+  const {userMetadata, loading, refetch} = useUserMetadata();
   // Fetch the room data based on the roomId parameter
   useEffect(() => {
     const fetchRoom = async () => {
@@ -34,7 +35,7 @@ const RoomPage = () => {
       } catch (error) {
         console.error("Error fetching room:", error);
       } finally {
-        setLoading(false);
+        setLoadingRooms(false);
       }
     };
     
@@ -42,28 +43,33 @@ const RoomPage = () => {
   }, [roomId]);
 
   const handleAddMember = async () => {
-    if (!room) return;
+    if (!room || !newMemberEmail.trim()) return;
     
     try {
-      const user = await findUserByEmail(newMemberEmail);
-      if (!user) {
-        alert("User not found");
-        return;
-      }
-      await addMemberToRoom(room, user);
-      alert(`${user.displayName || user.email} has been added to ${room.name}`);
-      setNewMemberEmail("");
+        const addedUser = await addMemberToRoomByEmail(room, newMemberEmail);
+    
+        if (!addedUser) {
+            alert("User not found");
+            return;
+        }   
+        alert(`${addedUser.displayName || addedUser.email} has been added to ${room.name}`);
+        setNewMemberEmail("");
     } catch (error) {
-      console.error("Error adding member:", error);
+        console.error("Error adding member:", error);
+        alert("Failed to add member to room");
     }
-  };
+};
 
-  if (loading) {
-    return <div>Loading room...</div>;
+  if (loadingRooms || loading) {
+    return <div>Loading...</div>;
   }
 
   if (!room) {
     return <div>Room not found</div>;
+  }
+
+  if (!userMetadata) {
+    return <div>User not authenticated</div>;
   }
 
   return (
@@ -80,8 +86,15 @@ const RoomPage = () => {
         />
         <button onClick={handleAddMember}>Add members</button>
       </div>
+      <MessageInput roomId={room.roomId} user={userMetadata}/>
     </div>
   );
 };
 
 export default RoomPage;
+
+
+// consisting components of
+// Chat history
+// Chat input 
+// Other info about the chat

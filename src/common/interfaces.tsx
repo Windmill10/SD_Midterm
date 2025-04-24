@@ -13,7 +13,6 @@ export interface Room {
   createdAt: Timestamp,
   createdBy: string,
   isPrivate: boolean,
-  messages?: Message[],
 }
 
 export interface User {
