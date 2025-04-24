@@ -7,6 +7,7 @@ import LoginPage from './pages/login';
 import RegisterPage from "./pages/register.tsx";
 import ProfilePage from './pages/profile';
 import MessagePage from "./pages/chat.tsx";
+import RoomPage from './pages/room.tsx';
 function App() {
   return (
     <Router>
@@ -19,6 +20,7 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/messages" element={<MessagePage />} />
+            <Route path="/room/:roomId" element={<RoomPage />} />
           </Routes>
         </main>
 

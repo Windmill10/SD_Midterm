@@ -3,6 +3,10 @@ import { firestore } from '../config/firebase';
 import {User} from '../common/interfaces';
 import { useAuth } from '../context/AuthContext';
 import { useEffect, useState, useCallback } from 'react';
+
+/** General purpose, given any email
+ * @returns {User || null}
+*/
 export const findUserByEmail = async (email: string) => {
   try{
     const userRef = collection(firestore, "users");
@@ -30,7 +34,10 @@ export const findUserByEmail = async (email: string) => {
     console.error("Error finding user by email:", error);
   }
 }
-
+/**
+ * Custom hook to fetch current logged in user metadata
+ * @returns {User | null}
+ */
 export const useUserMetadata = () => {
     const [userMetadata, setUserMetadata] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
@@ -62,6 +69,7 @@ export const useUserMetadata = () => {
     useEffect(() => {
       fetchUserMetadata();
     }, [fetchUserMetadata]);
+
     return { 
       userMetadata, 
       loading, 

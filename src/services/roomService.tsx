@@ -20,7 +20,7 @@ export const createRoom = async (room: Room, userMetadata: User) => {
             await updateDoc(userRef, {
                 chatrooms: arrayUnion(roomRef.id),
             });
-
+            room.roomId = roomRef.id
             return roomRef.id;
         }
 
@@ -30,3 +30,24 @@ export const createRoom = async (room: Room, userMetadata: User) => {
     }
 }
 
+export const addMemberToRoom = async(room: Room, user: User) => {   
+   console.log("Adding member to room:", room, user);
+    try {
+        if(!room || !user) {
+            throw new Error("Room or user is not defined");
+        }
+        const memberRef = doc(firestore, 'rooms', room.roomId, "members", user.uid);
+        const userRef = doc(firestore, 'users', user.uid);
+        await updateDoc(userRef, {
+            chatrooms: arrayUnion(room.roomId),
+        });
+        await setDoc(memberRef, {
+            uid: user.uid,
+            role: "member",
+            joinedAt: Timestamp.now(),
+        });
+    }catch (error) {
+        console.error("Error adding member to room:", error);
+        throw error;
+    }
+}

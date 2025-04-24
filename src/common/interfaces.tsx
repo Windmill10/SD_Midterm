@@ -8,6 +8,7 @@ export interface Message {
 }
 export interface Room {
   name: string,
+  roomId: string,
   description: string,
   createdAt: Timestamp,
   createdBy: string,
