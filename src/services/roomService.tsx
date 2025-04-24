@@ -1,8 +1,9 @@
-import { collection, addDoc, doc, updateDoc, getDoc, query, where, getDocs, arrayUnion, Timestamp, setDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, orderBy, getDoc, onSnapshot, query, where, getDocs, arrayUnion, Timestamp, setDoc } from 'firebase/firestore';
 import { firestore } from '../config/firebase';
 import { User } from '../common/interfaces';
 import { Room, Message } from '../common/interfaces';
 import { findUserByEmail } from '../common/findUser';
+
 export const createRoom = async (room: Room, userMetadata: User) => {
   try {
     if (userMetadata) {
@@ -84,4 +85,57 @@ export const addMessageToRoom = async (roomId: string, message: Message) => {
     console.error("Error adding message to room:", error);
     throw error;
   }
+}
+
+// but this is only usefor for one time fetching
+export const getMessagesFromRoom = async (roomId: string): Promise<Message[]> => {
+  const messageRef = collection(doc(firestore, 'rooms', roomId), 'messages');
+  const q = query(messageRef, orderBy("createdAt", "asc"));
+  try {
+    const querySnapshot = await getDocs(q);
+    const messages: Message[] = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      messages.push({
+        id: doc.id,
+        text: data.text,
+        senderId: data.senderId,
+        createdAt: data.createdAt,
+      });
+    }
+    );
+    return messages;
+  } catch (error) {
+    console.error("Error getting messages from room:", error);
+    throw error;
+  }
+}
+
+export const subscribeToMessages = (
+  roomId: string,
+  callback: (messages: Message[]) => void,
+  errorCallback?: (error: Error) => void
+) => {
+  const messageRef = collection(doc(firestore, 'rooms', roomId), 'messages');
+  const q = query(messageRef, orderBy("createdAt", "asc"));
+  return onSnapshot(q, (querySnapshot) => {
+    const messages: Message[] = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      messages.push({
+        id: doc.id,
+        text: data.text,
+        senderId: data.senderId,
+        createdAt: data.createdAt,
+      });
+    });
+    callback(messages);
+  }, 
+  (error) => {
+    console.error("Error subscribing to messages:", error);
+    if (errorCallback) {
+      errorCallback(error);
+    }
+  }
+  );
 }

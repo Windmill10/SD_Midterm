@@ -6,6 +6,7 @@ import { Room } from "../common/interfaces";
 import { addMemberToRoomByEmail } from "../services/roomService";
 import MessageInput from "../components/chat/messageinput";
 import { useUserMetadata } from "../common/findUser";
+import MessageHistory from "../components/chat/messageHistory.tsx";
 import "./chat.css";
 
 const RoomPage = () => {
@@ -86,6 +87,7 @@ const RoomPage = () => {
         />
         <button onClick={handleAddMember}>Add members</button>
       </div>
+      <MessageHistory roomId={room.roomId}/>
       <MessageInput roomId={room.roomId} user={userMetadata}/>
     </div>
   );
