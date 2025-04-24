@@ -34,6 +34,34 @@ export const findUserByEmail = async (email: string) => {
     console.error("Error finding user by email:", error);
   }
 }
+
+export const findUserById = async (uid: string) => {
+    try{
+        const userRef = collection(firestore, "users");
+        const q = query(userRef, where("uid", "==", uid));
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+        console.log("No matching documents.");
+        return null;
+        } else {
+        const userData = querySnapshot.docs[0].data();
+        const user: User = {
+            uid: userData.uid,
+            email: userData.email,
+            displayName: userData.displayName || '',
+            photoURL: userData.photoURL || '',
+            description: userData.description || '',
+            friends: userData.friends || [],
+            chatrooms: userData.chatrooms || [],
+            // Add any other fields from your User interface
+        };
+            console.log("User found:", user);
+            return user;
+        }
+    } catch (error) {
+        console.error("Error finding user by email:", error);
+    }
+}
 /**
  * Custom hook to fetch current logged in user metadata
  * @returns {User | null}
