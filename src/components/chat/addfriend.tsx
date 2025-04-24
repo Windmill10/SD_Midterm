@@ -15,7 +15,6 @@ export const AddFriend = () => {
     
     return (
         <div>
-        <h1>Add Friend</h1>
         <form onSubmit={handleAddFriend}> 
         <input type="text" placeholder="Enter email" value={email} onChange={(e => setEmail(e.target.value))}/>
         <button type="submit">Add Friend</button>

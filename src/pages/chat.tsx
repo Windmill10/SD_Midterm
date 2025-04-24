@@ -6,46 +6,61 @@ import { useAuth } from '../context/AuthContext.tsx';
 import {Room, User} from '../common/interfaces.tsx';
 import { AddFriend } from '../components/chat/addfriend.tsx';
 import {Chatrooms} from "../components/chat/chatrooms.tsx";
-import { findUserByEmail } from '../common/findUser.tsx';
+import { findUserByEmail, useUserMetadata } from '../common/findUser.tsx';
+import './chat.css';
 const MessagePage = () => {
-  const [userMetadata, setUserMetadata] = useState<User | null>(null);
+  const [isCreatingRoom, setIsCreatingRoom] = useState(false);
+  const {currentUser} = useAuth();
+  const {userMetadata, loading, refetch} = useUserMetadata();
 
-  const user = useAuth();
-  const currentUser = user.currentUser; //using firebase auth
-
-  useEffect(() => {
-    const fetchUserMetadata = async () => {
-      if (currentUser?.email) {
-        try {
-          const userData = await findUserByEmail(currentUser.email);
-          setUserMetadata(userData || null);
-        } catch (error) {
-          console.error("Error fetching user metadata:", error);
-        }
-      }
-    };
-
-    fetchUserMetadata();
-  }, [currentUser]);
-  if(!currentUser) {
+  if(!currentUser){
     return <div>Please login to see this page</div>
   }
+  if(!userMetadata){
+    return <div>User not found</div>
+  }
 
-  const testRoom: Room = {
-    name: "Test Room",
-    description: "This is a test room",
-    createdAt: Timestamp.now(),
-    createdBy: userMetadata?.email || "",
-    isPrivate: false,
-};
+  const handleCreateRoom = async () => {
+    const testRoom: Room = {
+      name: "Test Room",
+      description: "This is a test room",
+      createdAt: Timestamp.now(),
+      createdBy: userMetadata?.email || "",
+      isPrivate: false,
+    };
+    try {
+      setIsCreatingRoom(true);
+      await createRoom(testRoom, userMetadata);
+      await refetch();
+    } catch (error) {
+      console.error("Error creating room:", error);
+    } finally {
+      setIsCreatingRoom(false);
+    }
+  }
+
 
   return(
-    <div>
-      <h1>This is message Page</h1>
+    <div className="chat-page">
+      <h1>Chat Rooms</h1>
       {userMetadata && <p>Welcome, {userMetadata.email}</p>}
-      <button onClick={() => currentUser && createRoom(testRoom, userMetadata)}>Create Room</button>
-      <AddFriend />
-      {userMetadata && <Chatrooms {...userMetadata} />}
+      
+      {/* Use a container with fixed height for the action area */}
+      <div className="action-container">
+        <button 
+          onClick={handleCreateRoom}
+          disabled={isCreatingRoom}
+          className="create-button"
+        >
+          {isCreatingRoom ? 'Creating...' : 'Create Room'}
+        </button>
+        <AddFriend />
+      </div>
+      
+      {/* Fixed height container for chatrooms */}
+      <div className="rooms-container">
+        {userMetadata && <Chatrooms {...userMetadata} />}
+      </div>
     </div>
   )
 }

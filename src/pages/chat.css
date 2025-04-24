@@ -1,0 +1,49 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+  }
+  
+  .chat-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  
+  .action-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    min-height: 50px; /* Ensures consistent height */
+  }
+  
+  .rooms-container {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 300px; /* Prevents layout shifts */
+  }
+  
+  .create-button {
+    min-width: 120px; /* Prevents button width change */
+    height: 40px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .create-button:hover {
+    background-color: #388e3c;
+  }
+  
+  .create-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+  
+  /* Add transition for smoother UI changes */
+  .chatrooms-container {
+    transition: all 0.3s ease;
+  }

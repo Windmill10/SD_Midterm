@@ -1,6 +1,8 @@
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { firestore } from '../config/firebase';
 import {User} from '../common/interfaces';
+import { useAuth } from '../context/AuthContext';
+import { useEffect, useState, useCallback } from 'react';
 export const findUserByEmail = async (email: string) => {
   try{
     const userRef = collection(firestore, "users");
@@ -28,3 +30,41 @@ export const findUserByEmail = async (email: string) => {
     console.error("Error finding user by email:", error);
   }
 }
+
+export const useUserMetadata = () => {
+    const [userMetadata, setUserMetadata] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
+    const { currentUser } = useAuth();
+    
+    const fetchUserMetadata = useCallback(async () => {
+      if (!currentUser?.email) {
+        setUserMetadata(null);
+        setLoading(false);
+        return;
+      }
+      
+      setLoading(true);
+      try {
+        const userData = await findUserByEmail(currentUser.email);
+        if(!userData) {
+            alert("User not found");
+            setUserMetadata(null);
+            return;
+        }
+        setUserMetadata(userData);
+      } catch (error) {
+        console.error("Error fetching user metadata:", error);
+      } finally {
+        setLoading(false);
+      }
+    }, [currentUser]);
+    
+    useEffect(() => {
+      fetchUserMetadata();
+    }, [fetchUserMetadata]);
+    return { 
+      userMetadata, 
+      loading, 
+      refetch: fetchUserMetadata 
+    };
+  };
