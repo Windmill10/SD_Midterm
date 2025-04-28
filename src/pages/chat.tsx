@@ -153,7 +153,7 @@ const MessagePage = () => {
                   onClick={handleCreateRoom}
                   disabled={isCreatingRoom || !roomName.trim()}
                   startIcon={isCreatingRoom ? <CircularProgress size={20} color="inherit" /> : <CreateIcon />}
-                  sx={{ py: 1, mt: 1,   bgcolor: 'extraColors.success', color: "white", "&:hover": { bgcolor: 'extraColors.successDark' }}}
+                  sx={{ py: 1, mt: 1,  bgcolor: 'extraColors.success', color: "white", "&:hover": { bgcolor: 'extraColors.successDark' }}}
                 >
                   {isCreatingRoom ? 'Creating...' : 'Create Room'}
                 </Button>
