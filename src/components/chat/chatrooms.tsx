@@ -3,19 +3,20 @@ import { doc, getDoc } from 'firebase/firestore';
 import { firestore } from '../../config/firebase';
 import { User, Room } from "../../common/interfaces";
 import { useNavigate } from 'react-router-dom';
-export function Chatrooms(props: User) {
-  const { chatrooms, displayName } = props;
+import { List, ListItem, ListItemText } from '@mui/material';
 
+export function Chatrooms(props: User) {
+  const { chatrooms } = props;
   const [roomsData, setRoomsData] = useState<Room[]>([]);
   const navigate = useNavigate();
   const handleRoomClick = (roomId: string) => {
-    console.log("Room clicked:", roomId);
     navigate(`/room/${roomId}`);
-  }
+  };
 
   useEffect(() => {
     const fetchRoomData = async () => {
       if (!chatrooms || chatrooms.length === 0) {
+        setRoomsData([]);
         return;
       }
       try {
@@ -29,31 +30,60 @@ export function Chatrooms(props: User) {
               description: data?.description || "",
               createdAt: data?.createdAt || new Date(),
               createdBy: data?.createdBy || "",
-              isPrivate: data?.isPrivate || false
+              isPrivate: data?.isPrivate || false,
             };
           }
-          console.log("Room not found:", roomId);
           return null;
-        })
+        });
         const results = await Promise.all(chatroomPromises);
         setRoomsData(results.filter(Boolean) as Room[]);
       } catch (error) {
         console.error("Error fetching room data:", error);
       }
-    }
+    };
     fetchRoomData();
   }, [chatrooms]);
+
   return (
-    <div>
-      <ul className="rooms-list">
+      <List
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          width: 'max-content',
+          minWidth: '100%',
+          bgcolor: 'background.paper',
+          boxShadow: 3,
+          overflow: 'visible'
+        }}
+      >
         {roomsData.map((room: Room) => (
-          <li key={room.roomId}>
-            <button onClick={() => handleRoomClick(room.roomId)} key={room.roomId} className="room-item">
-              {room.name}
-            </button>
-          </li>
+          <ListItem
+            key={room.roomId}
+            onClick={() => handleRoomClick(room.roomId)}
+            sx={{
+              minWidth: 220,
+              maxWidth: 320,
+              flex: '0 0 auto',
+              cursor: 'pointer',
+              mr: 2,
+              bgcolor: 'grey.100',
+              borderRadius: 1,
+              boxShadow: 1,
+              '&:hover': { bgcolor: 'grey.200' },
+              transition: 'background 0.2s',
+              my: 0.5,
+              overflowX: 'hidden',
+              wordWrap: 'break-word',
+              whiteSpace: 'normal',
+            }}
+          >
+            <ListItemText
+              primary={room.name}
+              secondary={room.description}
+
+            />
+          </ListItem>
         ))}
-      </ul>
-    </div>
-  )
+      </List>
+  );
 }
