@@ -5,6 +5,9 @@ import {setDoc, doc} from "firebase/firestore";
 import {firestore} from "../config/firebase";
 import {auth} from "../config/firebase";
 import {User} from "../common/interfaces.tsx";
+import {Avatar, Container} from "@mui/material";
+import LockIcon from '@mui/icons-material/Lock';
+import {Typography, Box, TextField, Button} from "@mui/material";
 const RegisterPage = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -37,42 +40,78 @@ const RegisterPage = () => {
             alert(error);
         }
     }
-    return (
-      <div>
-          <h1>Register Page</h1>
-          <form onSubmit={handleRegister}>
-              <input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e=> setEmail(e.target.value))}
-                  required
-              />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e => setPassword(e.target.value))}
-                    required
-                />
-                <input
-                    type="password"
-                    placeholder="Confirm Password"
-                    value={confirmPassword}
-                    onChange={(e => setConfirmPassword(e.target.value))}
-                    required
-                />
-              <input
-                type="username"
-                placeholder="Username"
-                value={username}
-                onChange={(e => setUsername(e.target.value))}
-                required
-              />
-                <button type="submit">Register</button>
-          </form>
-      </div>
-    )
+  return (
+    <Container component="main" maxWidth="xs">
+      <Box
+        sx={{
+          marginTop: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
+          <LockIcon />
+        </Avatar>
+        <Typography component="h1" variant="h5">
+          Sign up
+        </Typography>
+        <Box component="form" onSubmit={handleRegister} sx={{ mt: 3, width: '100%' }}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="Email Address"
+            name="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="username"
+            label="Username"
+            name="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Password"
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="confirmPassword"
+            label="Confirm Password"
+            type="password"
+            id="confirmPassword"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 3, mb: 2 }}
+          >
+            Register
+          </Button>
+        </Box>
+      </Box>
+    </Container>
+  );
 }
 
 export default RegisterPage;

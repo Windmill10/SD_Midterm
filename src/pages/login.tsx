@@ -40,6 +40,8 @@ const LoginPage = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        width: 'auto',
+        padding: '2rem',
         // optional: give a background if needed
         // background: '#f5f5f5'
       }}
@@ -47,12 +49,10 @@ const LoginPage = () => {
 
     <SignInPage
       providers={providers}
-      className="login-box"
       sx={{
-        width: '100%', // Or any max width you want
-        maxWidth: '800px',
-        height: '100%',
-        maxHeight: '600px',
+        width: '90vw',
+        maxWidth: 600,
+        minWidth: 320,
         padding: '2rem',
         borderRadius: '1rem',
         display: 'flex',

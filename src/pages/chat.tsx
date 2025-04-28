@@ -114,7 +114,7 @@ const MessagePage = () => {
               sx={{ borderBottom: '1px solid', borderColor: 'divider' }}
             />
             <CardContent>
-              <Box component="form" sx={{ '& .MuiTextField-root': { mb: 3 } }}>
+              <Box component="form" sx={{ '& .MuiTextField-root': { mb: 3, ml: 0.2 } }}>
                 <TextField
                   fullWidth
                   required

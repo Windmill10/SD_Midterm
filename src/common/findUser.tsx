@@ -27,7 +27,8 @@ export const findUserByEmail = async (email: string) => {
         chatrooms: userData.chatrooms || [],
         // Add any other fields from your User interface
       };
-        console.log("User found:", user);
+        //console.log("User found:", user);
+        console.log("User found:", user.displayName);
         return user;
     }
   } catch (error) {
@@ -55,7 +56,7 @@ export const findUserById = async (uid: string) => {
             chatrooms: userData.chatrooms || [],
             // Add any other fields from your User interface
         };
-            console.log("User found:", user);
+            //console.log("User found:", user);
             return user;
         }
     } catch (error) {
