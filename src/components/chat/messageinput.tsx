@@ -4,6 +4,7 @@ import { useState } from "react";
 import { User } from "../../common/interfaces.tsx";
 import {TextField} from "@mui/material";
 import {Button, Box} from "@mui/material";
+import SendIcon from '@mui/icons-material/Send';
 interface MessageInputProps {
   roomId: string;
   user: User
@@ -30,13 +31,18 @@ const MessageInput: React.FC<MessageInputProps> = (props) => {
   return (
     // Wrap input and button in a form element and attach onSubmit here
     <Box display={"flex"} alignItems={"center"} justifyContent={"center"}>
-      <form onSubmit={handleMessageSubmit}>
+      <form
+        onSubmit={handleMessageSubmit}
+        style={{ width: '100%', display: 'flex', alignItems: 'center' }}
+      >
         <TextField type="text"
                    placeholder="Type a message..."
                    value={message}
                    onChange={(e) => setMessage(e.target.value)}
+                   sx={{maxWidth: "100%", mr: 2,}}
+                   fullWidth
         />
-        <Button type="submit" sx={{pt: 2, }}>Send</Button>
+        <Button type="submit" variant={"contained"} endIcon={<SendIcon/>} sx={{pt: 1}}>Send</Button>
       </form>
     </Box>
   )

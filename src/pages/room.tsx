@@ -8,8 +8,9 @@ import MessageInput from "../components/chat/messageinput";
 import { useUserMetadata } from "../common/findUser";
 import MessageHistory from "../components/chat/messageHistory.tsx";
 import { Chatrooms } from "../components/chat/chatrooms.tsx";
-import { Box, Paper, Typography, IconButton, InputBase, Button, Divider } from "@mui/material";
+import { Box, Paper, Typography, IconButton, InputBase, Button, Divider, Alert, AlertColor } from "@mui/material"; // Added Alert, AlertColor
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
+import Snackbar from "@mui/material/Snackbar";
 
 const RoomPage = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -18,6 +19,10 @@ const RoomPage = () => {
   const [loadingRooms, setLoadingRooms] = useState(true);
   const { userMetadata, loading, refetch } = useUserMetadata();
 
+  // Snackbar state
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<AlertColor>("success");
 
   useEffect(() => {
     const fetchRoom = async () => {
@@ -50,19 +55,32 @@ const RoomPage = () => {
     try {
       const addedUser = await addMemberToRoomByEmail(room, newMemberEmail);
       if (!addedUser) {
-        alert("User not found");
-        return;
+        setSnackbarMessage("User not found");
+        setSnackbarSeverity("warning");
+      } else {
+        setSnackbarMessage(`${addedUser.displayName || addedUser.email} has been added to ${room.name}`);
+        setSnackbarSeverity("success");
+        setNewMemberEmail(""); // Clear input on success
       }
-      alert(`${addedUser.displayName || addedUser.email} has been added to ${room.name}`);
-      setNewMemberEmail("");
     } catch (error) {
       console.error("Error adding member:", error);
-      alert("Failed to add member to room");
+      setSnackbarMessage("Failed to add member to room");
+      setSnackbarSeverity("error");
+    } finally {
+      setSnackbarOpen(true); // Open snackbar regardless of outcome
     }
   };
 
+  // Function to close the snackbar
+  const handleSnackbarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
+
   if (loadingRooms || loading) {
-    return <div>Loading...</div>;
+    return <div>Loading...</div>; // Consider using MUI Skeleton or CircularProgress here
   }
   if (!room) {
     return <div>Room not found</div>;
@@ -74,7 +92,7 @@ const RoomPage = () => {
   return (
     <Box
       sx={{
-        minHeight: 'calc(100vh - 64px)',   // Only as tall as needed, but never less
+        minHeight: 'calc(100vh - 64px)',
         display: 'flex',
         bgcolor: 'background.default',
         overflow: 'hidden',
@@ -92,25 +110,24 @@ const RoomPage = () => {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          height: '100%',
+          height: '100%', // Adjusted for consistency
           mx: 2,
-          pl: 1,
+          // pl: 1, // Removed padding left for centering
+          borderRadius: 2,
           overflowY: 'auto',
-          minHeight: 200,
-          maxHeight: 865,
+          minHeight: 200, // Consider removing if height: 100% is used
+          maxHeight: 865, // Consider removing if height: 100% is used
         }}
         square
       >
-        <Typography variant="h6" p={2} sx={{ textAlign: 'center' }}>
+        <Typography variant="h6" p={2} sx={{ textAlign: 'center', width: '100%' }}>
           Chatrooms
         </Typography>
-        <Divider />
-        <Box sx={{ flex: 1, overflowY: 'auto' }} width='90%' alignContent={'center'}>
+        <Divider sx={{ width: '100%' }}/>
+        <Box sx={{ flex: 1, overflowY: 'auto', width: '90%' }}> {/* Centered content */}
           <Chatrooms {...userMetadata} />
         </Box>
-        <Box p={2}>
-          {/* Optional: add create room button here */}
-        </Box>
+
       </Paper>
 
       {/* Main chat area */}
@@ -119,8 +136,9 @@ const RoomPage = () => {
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          height: '90vh',
-          width: { xs: 'calc(100vw - 90px)', sm: 'calc(100vw - 240px)' }
+          height: 'calc(100vh - 64px - 35px - 2px)', // Calculate height based on parent Box padding/margin
+          width: { xs: 'calc(100vw - 200px - 32px)', sm: 'calc(100vw - 300px - 32px)' }, // Adjusted width calculation
+          borderRadius: 2,
         }}
       >
         {/* Room info and add member */}
@@ -174,12 +192,12 @@ const RoomPage = () => {
         {/* Message history */}
         <Box
           sx={{
-            flex: 1,
+            flex: 1, // Takes remaining space
             px: { xs: 0.5, sm: 3 },
             py: 2,
             overflowY: 'auto',
             bgcolor: 'background.default',
-            minHeight: 0,
+            minHeight: 0, // Important for flexbox scrolling
           }}
         >
           <MessageHistory roomId={room.roomId} currentUserId={userMetadata.uid} />
@@ -197,6 +215,23 @@ const RoomPage = () => {
           <MessageInput roomId={room.roomId} user={userMetadata} />
         </Box>
       </Box>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} // Position snackbar
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
