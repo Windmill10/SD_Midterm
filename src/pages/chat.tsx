@@ -212,7 +212,11 @@ const ChatPage = () => {
             px: { xs: 0, md: 2 },
             overflowY: 'auto',
             minHeight: 200,
-            maxHeight: 424,
+            maxHeight: 440,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
           }}>
             {userMetadata ? (
               <Box sx={{

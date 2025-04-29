@@ -17,16 +17,6 @@ const LoginPage = () => {
       navigate("/");
     }
   }, [currentUser, navigate]);
-  const handleLogin = async (e: FormEvent) => {
-    e.preventDefault();
-    try{
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate("/");
-    } catch(error: unknown) {
-      console.log(error)
-    }
-  }
-
 
   const providers = [
     {id: "google", name: "Google"},

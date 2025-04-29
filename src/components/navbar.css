@@ -38,7 +38,7 @@
   
   .logout-btn {
     background: none;
-    border: 1px solid #332e2e;
+    border: 3px solid #332e2e;
     background: transparent;
     transition: border-color 0.25s, color 0.25s;
     color: #fff;

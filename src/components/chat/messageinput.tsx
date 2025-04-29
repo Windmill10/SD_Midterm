@@ -2,6 +2,8 @@ import { Timestamp } from "firebase/firestore";
 import { addMessageToRoom } from "../../services/roomService.tsx";
 import { useState } from "react";
 import { User } from "../../common/interfaces.tsx";
+import {TextField} from "@mui/material";
+import {Button, Box} from "@mui/material";
 interface MessageInputProps {
   roomId: string;
   user: User
@@ -26,18 +28,19 @@ const MessageInput: React.FC<MessageInputProps> = (props) => {
     }
   }
   return (
-    <div>
+    // Wrap input and button in a form element and attach onSubmit here
+    <Box display={"flex"} alignItems={"center"} justifyContent={"center"}>
       <form onSubmit={handleMessageSubmit}>
-        <input type="text"
-          placeholder="Type a message..."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
+        <TextField type="text"
+                   placeholder="Type a message..."
+                   value={message}
+                   onChange={(e) => setMessage(e.target.value)}
         />
-
-        <button type="submit">Send</button>
+        <Button type="submit" sx={{pt: 2, }}>Send</Button>
       </form>
-    </div>
+    </Box>
   )
+
 }
 
 export default MessageInput;

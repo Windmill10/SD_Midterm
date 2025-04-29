@@ -50,9 +50,11 @@ export function Chatrooms(props: User) {
           display: 'flex',
           flexDirection: 'column',
           width: 'max-content',
-          minWidth: '100%',
+          minWidth: '80%',
+          maxWidth: '90%',
           bgcolor: 'background.paper',
-          boxShadow: 3,
+          //boxShadow: 3,
+
           overflow: 'visible'
         }}
       >
@@ -65,6 +67,7 @@ export function Chatrooms(props: User) {
               maxWidth: 320,
               flex: '0 0 auto',
               cursor: 'pointer',
+              display: 'flex',
               mr: 2,
               bgcolor: 'grey.100',
               borderRadius: 1,
@@ -75,6 +78,7 @@ export function Chatrooms(props: User) {
               overflowX: 'hidden',
               wordWrap: 'break-word',
               whiteSpace: 'normal',
+              px: 2,
             }}
           >
             <ListItemText
