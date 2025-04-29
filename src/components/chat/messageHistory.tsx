@@ -11,9 +11,10 @@ import { removeMessageFromRoom } from '../../services/roomService';
 interface MessageHistoryProps {
   roomId: string;
   currentUserId: string; // Added prop
+  targetMessage: string
 }
 
-const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId }) => {
+const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, targetMessage }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [messageUsers, setMessageUsers] = useState<{ [senderId: string]: User | null }>({});
@@ -21,6 +22,11 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId }
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null); // State to track hovered message
 
   // Effect to scroll down when new messages arrive
+
+  useEffect(() => {
+    console.log("Searching");
+    console.log(targetMessage);
+  }, [targetMessage]);
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);

@@ -8,9 +8,11 @@ import MessageInput from "../components/chat/messageinput";
 import { useUserMetadata } from "../common/findUser";
 import MessageHistory from "../components/chat/messageHistory.tsx";
 import { Chatrooms } from "../components/chat/chatrooms.tsx";
-import { Box, Paper, Typography, IconButton, InputBase, Button, Divider, Alert, AlertColor } from "@mui/material"; // Added Alert, AlertColor
+import { Box, Paper, Typography, IconButton, InputBase, Button, Divider, Alert, AlertColor, Icon } from "@mui/material"; // Added Alert, AlertColor
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 import Snackbar from "@mui/material/Snackbar";
+import SearchIcon from '@mui/icons-material/Search';
+import { Search } from "@mui/icons-material";
 
 const RoomPage = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -24,6 +26,16 @@ const RoomPage = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<AlertColor>("success");
 
+  //serach message states
+  const [targetMessage, setTargetMessage] = useState<string>("");
+  const [searching, setSearching] = useState(false);
+
+  const handleSearchMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!targetMessage.trim()) return;
+    setSearching(true);
+    setTargetMessage(targetMessage);
+  }
   useEffect(() => {
     const fetchRoom = async () => {
       if (!roomId) return;
@@ -101,7 +113,7 @@ const RoomPage = () => {
       }}
     >
 
-    {/* Chatrooms sidebar */}
+      {/* Chatrooms sidebar */}
       <Paper
         elevation={3}
         sx={{
@@ -123,7 +135,7 @@ const RoomPage = () => {
         <Typography variant="h6" p={2} sx={{ textAlign: 'center', width: '100%' }}>
           Chatrooms
         </Typography>
-        <Divider sx={{ width: '100%' }}/>
+        <Divider sx={{ width: '100%' }} />
         <Box sx={{ flex: 1, overflowY: 'auto', width: '90%' }}> {/* Centered content */}
           <Chatrooms {...userMetadata} />
         </Box>
@@ -149,44 +161,95 @@ const RoomPage = () => {
             pb: 2,
             bgcolor: 'background.paper',
             borderBottom: '1px solid',
-            borderColor: 'divider'
+            borderColor: 'divider',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2
           }}
         >
-          <Typography variant="h5" fontWeight={600}>
-            {room.name}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            {room.description}
-          </Typography>
-          <Box
-            component="form"
-            onSubmit={handleAddMember}
-            sx={{ display: 'flex', alignItems: 'center', gap: 1, maxWidth: 400 }}
-          >
-            <InputBase
-              placeholder="Enter email to add"
-              type="email"
-              size="small"
-              value={newMemberEmail}
-              onChange={(e) => setNewMemberEmail(e.target.value)}
+          {/* First row: Room name and description */}
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+            <Typography variant="h5" fontWeight={600}>
+              {room.name}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ gap: 2, alignSelf: 'center', maxWidth: "100%", overflowWrap: 'break-word' }}>
+              {room.description}
+            </Typography>
+          </Box>
+
+          {/* Second row: Add member and search functions */}
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <Box
+              component="form"
+              onSubmit={handleAddMember}
               sx={{
-                bgcolor: 'background.default',
-                px: 2,
-                py: 0.5,
-                flex: 1,
-                borderRadius: 2,
-                border: '1px solid',
-                borderColor: 'divider'
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                flex: '1 1 250px',
+                minWidth: '250px'
               }}
-            />
-            <IconButton
-              color="primary"
-              type="submit"
-              sx={{ p: 1.2 }}
-              disabled={!newMemberEmail.trim()}
             >
-              <PersonAddAlt1Icon />
-            </IconButton>
+              <InputBase
+                placeholder="Enter email to add"
+                type="email"
+                size="small"
+                value={newMemberEmail}
+                onChange={(e) => setNewMemberEmail(e.target.value)}
+                sx={{
+                  bgcolor: 'background.default',
+                  px: 2,
+                  py: 0.5,
+                  flex: 1,
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: 'divider'
+                }}
+              />
+              <IconButton
+                color="primary"
+                type="submit"
+                sx={{ p: 1.2 }}
+                disabled={!newMemberEmail.trim()}
+              >
+                <PersonAddAlt1Icon />
+              </IconButton>
+            </Box>
+
+            <Box
+              component="form"
+              onSubmit={handleSearchMessage}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                flex: '1 1 250px',
+                minWidth: '250px'
+              }}
+            >
+              <InputBase
+                placeholder="Search message"
+                sx={{
+                  bgcolor: 'background.default',
+                  px: 2,
+                  py: 0.5,
+                  flex: 1,
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: 'divider'
+                }}
+                value={targetMessage}
+                onChange={(e => setTargetMessage(e.target.value))}
+              />
+              <IconButton
+                color="primary"
+                type="submit"
+                sx={{ p: 1.2 }}
+                disabled={!targetMessage}
+              >
+                <SearchIcon />
+              </IconButton>
+            </Box>
           </Box>
         </Box>
         {/* Message history */}
@@ -200,7 +263,7 @@ const RoomPage = () => {
             minHeight: 0, // Important for flexbox scrolling
           }}
         >
-          <MessageHistory roomId={room.roomId} currentUserId={userMetadata.uid} />
+          <MessageHistory roomId={room.roomId} currentUserId={userMetadata.uid} targetMessage={targetMessage} />
         </Box>
         {/* Message input at bottom */}
         <Box
