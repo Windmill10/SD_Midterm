@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Paper, Typography, Avatar, Stack, CircularProgress } from '@mui/material'; // Import MUI components
+import { Box, Paper, Typography, Avatar, Stack, CircularProgress, Divider } from '@mui/material'; // Import MUI components (Added Divider)
 import { subscribeToMessages } from '../../services/roomService';
 import { Message, User } from '../../common/interfaces';
 import { findUserById } from '../../common/findUser'; // Assuming this function returns Promise<User | null>
@@ -7,11 +7,12 @@ import Button  from "@mui/material/Button"
 import {IconButton} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { removeMessageFromRoom } from '../../services/roomService';
+
 // Define props to include the current user's ID
 interface MessageHistoryProps {
   roomId: string;
   currentUserId: string; // Added prop
-  targetMessage: string
+  targetMessage: string; // Search term
 }
 
 const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, targetMessage }) => {
@@ -21,15 +22,21 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, 
   const messagesEndRef = useRef<HTMLDivElement>(null); // For scrolling to bottom
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null); // State to track hovered message
 
-  // Effect to scroll down when new messages arrive
+  // Filter messages based on targetMessage
+  const filteredMessages = targetMessage
+    ? messages.filter(message =>
+      message.text.toLowerCase().includes(targetMessage.toLowerCase())
+    )
+    : messages;
 
+  const isSearching = targetMessage.length > 0;
+
+  // Effect to scroll down when new messages arrive, ONLY if not searching
   useEffect(() => {
-    console.log("Searching");
-    console.log(targetMessage);
-  }, [targetMessage]);
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (!isSearching) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isSearching]); // Depend on isSearching
 
   // Effect to subscribe to messages
   useEffect(() => {
@@ -49,10 +56,16 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, 
     return () => unsubscribe();
   }, [roomId]);
 
+  // Effect to fetch user data for senders
   useEffect(() => {
-    const senderIds = [...new Set(messages.map((message) => message.senderId))];
+    // Fetch users for currently displayed messages (could be all or filtered)
+    const senderIds = [...new Set(filteredMessages.map((message) => message.senderId))];
     senderIds.forEach(async (senderId) => {
       if (!(senderId in messageUsers)) {
+        setMessageUsers((prev) => ({
+          ...prev,
+          [senderId]: prev[senderId] || null // Mark as loading initially with null
+        }));
         try {
           const user = await findUserById(senderId);
           setMessageUsers((prev) => ({
@@ -68,7 +81,7 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, 
         }
       }
     });
-  }, [messages]); // Re-run when messages update
+  }, [filteredMessages, messageUsers]); // Re-run when filteredMessages update
 
   return (
     // Use MUI Stack for vertical spacing between message rows
@@ -78,16 +91,29 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, 
           <CircularProgress />
         </Box>
       )}
-      {!loading && messages.length === 0 && (
+
+      {/* Search Results Indicator */}
+      {!loading && isSearching && (
+        <Paper elevation={1} sx={{ p: 1, mb: 1, textAlign: 'center', backgroundColor: 'action.selected' }}>
+          <Typography variant="body2" color="text.secondary">
+            Showing search results for "{targetMessage}" ({filteredMessages.length} found)
+          </Typography>
+        </Paper>
+      )}
+
+      {/* Message List */}
+      {!loading && filteredMessages.length === 0 && !isSearching && (
         <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', p: 2 }}>
           No messages yet. Start the conversation!
         </Typography>
       )}
-      {!loading && messages.map((message) => {
-        // Determine if the message is from the current user
+
+      {/* Map over filteredMessages instead of messages */}
+      {!loading && filteredMessages.map((message) => {
         const isCurrentUser = message.senderId === currentUserId;
         const sender = messageUsers[message.senderId]; // Get sender data (might be User, null, or undefined if still loading)
         const messageid = message.id;
+        // Rest of the message rendering logic remains the same...
         return (
           <Box
             key={message.id}
@@ -101,35 +127,33 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, 
               gap: 1,
             }}
           >
-            {/* Stack to group Avatar and Message Bubble */}
+            {/* Unsend Button */}
             {isCurrentUser && (<IconButton
-                size="small"
-                onClick={() => {removeMessageFromRoom(roomId, messageid)}}
-                sx={{
+              size="small"
+              onClick={() => {removeMessageFromRoom(roomId, messageid)}}
+              sx={{
+                opacity: hoveredMessageId === message.id ? 0.7 : 0,
+                transition: 'opacity 0.2s ease-in-out',
+                '&:hover': {
+                  opacity: 1,
+                  bgcolor: 'action.hover'
+                },
+                width: 28,
+                height: 28,
+                alignSelf: 'center',
+              }}
+              aria-label="unsend message"
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>)
+            }
 
-                  opacity: hoveredMessageId === message.id ? 0.7 : 0,
-                  transition: 'opacity 0.2s ease-in-out',
-                  '&:hover': {
-                    opacity: 1,
-                    bgcolor: 'action.hover' 
-                  },
-                  // Ensure button size is fixed and small
-                  width: 28,
-                  height: 28,
-                  alignSelf: 'center', 
-                }}
-                aria-label="unsend message"
-              >
-                <DeleteIcon fontSize="small" />
-              </IconButton>)
-              }
-            
+            {/* Message Content Stack */}
             <Stack
-              // Avatar on left for current user, right for others
               direction={isCurrentUser ? 'row-reverse' : 'row'}
               spacing={1}
               alignItems="flex-end"
-              sx={{ maxWidth: '100%' }}
+              sx={{ maxWidth: '100%' }} // Adjust max width if needed
             >
               {/* Avatar */}
               <Avatar
@@ -143,15 +167,14 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, 
                 alt={sender?.displayName ? `${sender.displayName}'s avatar` : 'User avatar'}
               >
                 {!sender?.photoURL ? sender?.displayName?.charAt(0).toUpperCase() : null}
-
               </Avatar>
 
+              {/* Message Bubble */}
               <Paper
                 elevation={1}
                 sx={{
                   p: 1.5,
                   borderRadius: isCurrentUser ? '20px 20px 5px 20px' : '20px 20px 20px 5px',
-                  // Different background colors
                   bgcolor: isCurrentUser ? 'primary.light' : 'background.paper',
                   color: isCurrentUser ? 'primary.contrastText' : 'text.primary',
                   wordBreak: 'break-word',
@@ -160,7 +183,7 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, 
                   alignItems: 'start'
                 }}
               >
-                {/* Optionally display sender's name for other users' messages */}
+                {/* Sender Name */}
                 {!isCurrentUser && sender?.displayName && (
                   <Typography
                     variant="caption"
@@ -168,7 +191,6 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, 
                     sx={{ mb: 0.5, fontWeight: 'bold', color: isCurrentUser ? 'inherit' : 'text.secondary' }}
                   >
                     {sender.displayName}
-
                   </Typography>
                 )}
                 {/* Message Text */}
@@ -179,7 +201,6 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, 
                   display="block"
                   sx={{ mt: 0.5, textAlign: 'right', opacity: 0.8, fontSize: '0.7rem' }}
                 >
-                  {/* Format timestamp nicely */}
                   {message.createdAt?.toDate().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
                 </Typography>
               </Paper>
@@ -187,8 +208,8 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, 
           </Box>
         );
       })}
-      {/* Invisible div at the end for auto-scrolling */}
-      <div ref={messagesEndRef} />
+      {/* Invisible div at the end for auto-scrolling (only works when not searching) */}
+      {!isSearching && <div ref={messagesEndRef} />}
     </Stack>
   );
 };
