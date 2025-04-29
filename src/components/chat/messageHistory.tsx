@@ -3,7 +3,10 @@ import { Box, Paper, Typography, Avatar, Stack, CircularProgress } from '@mui/ma
 import { subscribeToMessages } from '../../services/roomService';
 import { Message, User } from '../../common/interfaces';
 import { findUserById } from '../../common/findUser'; // Assuming this function returns Promise<User | null>
-
+import Button  from "@mui/material/Button"
+import {IconButton} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { removeMessageFromRoom } from '../../services/roomService';
 // Define props to include the current user's ID
 interface MessageHistoryProps {
   roomId: string;
@@ -15,6 +18,7 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId }
   const [loading, setLoading] = useState(true);
   const [messageUsers, setMessageUsers] = useState<{ [senderId: string]: User | null }>({});
   const messagesEndRef = useRef<HTMLDivElement>(null); // For scrolling to bottom
+  const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null); // State to track hovered message
 
   // Effect to scroll down when new messages arrive
   useEffect(() => {
@@ -42,9 +46,7 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId }
   useEffect(() => {
     const senderIds = [...new Set(messages.map((message) => message.senderId))];
     senderIds.forEach(async (senderId) => {
-      // Fetch only if user data isn't already loaded or being fetched
       if (!(senderId in messageUsers)) {
-        // Temporarily mark as fetching to prevent multiple calls (optional)
         try {
           const user = await findUserById(senderId);
           setMessageUsers((prev) => ({
@@ -79,18 +81,43 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId }
         // Determine if the message is from the current user
         const isCurrentUser = message.senderId === currentUserId;
         const sender = messageUsers[message.senderId]; // Get sender data (might be User, null, or undefined if still loading)
-
-
+        const messageid = message.id;
         return (
           <Box
             key={message.id}
+            onMouseEnter={() => setHoveredMessageId(message.id)}
+            onMouseLeave={() => setHoveredMessageId(null)}
             sx={{
               display: 'flex',
               justifyContent: isCurrentUser ? 'flex-end' : 'flex-start',
               width: '100%',
+              position: 'relative',
+              gap: 1,
             }}
           >
             {/* Stack to group Avatar and Message Bubble */}
+            {isCurrentUser && (<IconButton
+                size="small"
+                onClick={() => {removeMessageFromRoom(roomId, messageid)}}
+                sx={{
+
+                  opacity: hoveredMessageId === message.id ? 0.7 : 0,
+                  transition: 'opacity 0.2s ease-in-out',
+                  '&:hover': {
+                    opacity: 1,
+                    bgcolor: 'action.hover' 
+                  },
+                  // Ensure button size is fixed and small
+                  width: 28,
+                  height: 28,
+                  alignSelf: 'center', 
+                }}
+                aria-label="unsend message"
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>)
+              }
+            
             <Stack
               // Avatar on left for current user, right for others
               direction={isCurrentUser ? 'row-reverse' : 'row'}

@@ -3,6 +3,7 @@ import { firestore } from '../config/firebase';
 import { User } from '../common/interfaces';
 import { Room, Message } from '../common/interfaces';
 import { findUserByEmail } from '../common/findUser';
+import { deleteDoc } from 'firebase/firestore';
 
 export const createRoom = async (room: Room, userMetadata: User) => {
   try {
@@ -80,7 +81,7 @@ export const addMessageToRoom = async (roomId: string, message: Message) => {
     const roomRef = doc(firestore, 'rooms', roomId);
     const messageRef = collection(roomRef, 'messages');
     await addDoc(messageRef, message);
-    console.log("Message added to room:", roomId, message);
+    //console.log("Message added to room:", roomId, message);
   } catch (error) {
     console.error("Error adding message to room:", error);
     throw error;
@@ -138,4 +139,16 @@ export const subscribeToMessages = (
     }
   }
   );
+}
+
+export const removeMessageFromRoom = async (roomId: string, messageId: string) => {
+  try {
+    console.log("hi");
+    const messageRef = doc(firestore, 'rooms', roomId, 'messages', messageId);
+    await deleteDoc(messageRef);
+    console.log("Message removed from room");
+  } catch (error) {
+    console.error("Error removing message from room:", error);
+    throw error;
+  }
 }
