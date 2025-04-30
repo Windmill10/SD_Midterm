@@ -1,0 +1,13 @@
+[
+  {
+    "origin": [
+      "http://localhost:5173", 
+      "https://midt-ff631.web.app", 
+      "https://midt-ff631.firebaseapp.com", 
+      "https://<YOUR-CUSTOM-DOMAIN-IF-ANY>"
+    ],
+    "method": ["GET", "HEAD", "PUT", "POST", "DELETE"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": ["Content-Type", "Content-Disposition"]
+  }
+]

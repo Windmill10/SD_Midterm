@@ -1,16 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Avatar, Box, CircularProgress, Typography, Button, TextField, Paper, Stack, IconButton, Snackbar, Alert, AlertColor } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import { useUserMetadata } from '../common/findUser';
-import { updateUserProfile } from '../services/userService'; // Import the update function
+import { updateUserProfile, uploadProfilePhoto } from '../services/userService';
+import { User } from '../common/interfaces';
 
 const ProfilePage = () => {
   const { userMetadata, loading, refetch } = useUserMetadata();
   const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [description, setDescription] = useState('');
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Snackbar state
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -33,6 +38,43 @@ const ProfilePage = () => {
       }
     }
     setIsEditing(!isEditing);
+  };
+
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || !event.target.files[0] || !userMetadata) {
+      return;
+    }
+
+    const file = event.target.files[0];
+
+    try {
+      setUploadingPhoto(true);
+      // Upload the photo and get the URL
+      const photoURL = await uploadProfilePhoto(file, userMetadata.uid);
+
+      // Update the user's profile with the new photo URL
+      await updateUserProfile(userMetadata.uid, { photoURL });
+
+      // Show success message
+      setSnackbarMessage("Profile photo updated successfully!");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+
+      // Refresh user data
+      await refetch();
+    } catch (error) {
+      console.error("Failed to upload profile photo:", error);
+      setSnackbarMessage("Failed to upload profile photo.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      setUploadingPhoto(false);
+
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   const handleSave = async () => {
@@ -62,11 +104,11 @@ const ProfilePage = () => {
       setSnackbarMessage("Failed to update profile.");
       setSnackbarSeverity("error");
     } finally {
-        setSnackbarOpen(true);
+      setSnackbarOpen(true);
     }
   };
 
-   const handleSnackbarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+  const handleSnackbarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
     }
@@ -96,20 +138,53 @@ const ProfilePage = () => {
           {/* Avatar Section */}
           <Box sx={{ position: 'relative' }}>
             <Avatar
-              sx={{ width: 120, height: 120, mb: { xs: 2, sm: 0 } }}
+              sx={{
+                width: 120,
+                height: 120,
+                mb: { xs: 2, sm: 0 },
+                border: '4px solid',
+                borderColor: 'background.paper'
+              }}
               src={userMetadata.photoURL || undefined}
               alt={userMetadata.displayName || userMetadata.email}
             >
               {!userMetadata.photoURL ? (userMetadata.displayName?.[0] || userMetadata.email?.[0])?.toUpperCase() : null}
             </Avatar>
-            {/* Add Photo Upload Button (Optional Feature) */}
-            
+
+            {/* Hidden file input for photo upload */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={handlePhotoUpload}
+            />
+
+            {/* Photo Upload Button */}
             {isEditing && (
-              <IconButton size="small" sx={{ position: 'absolute', bottom: 0, right: 0, bgcolor: 'background.paper' }}>
-                <EditIcon fontSize="small" />
+              <IconButton
+                size="small"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingPhoto}
+                sx={{
+                  position: 'absolute',
+                  bottom: 0,
+                  right: 0,
+                  bgcolor: 'background.paper',
+                  boxShadow: 1,
+                  '&:hover': {
+                    bgcolor: 'primary.light',
+                    color: 'white'
+                  }
+                }}
+              >
+                {uploadingPhoto ? (
+                  <CircularProgress size={24} />
+                ) : (
+                  <PhotoCameraIcon fontSize="small" />
+                )}
               </IconButton>
             )}
-            
           </Box>
 
           {/* Details Section */}
@@ -172,7 +247,7 @@ const ProfilePage = () => {
         </Stack>
       </Paper>
 
-       {/* Snackbar for notifications */}
+      {/* Snackbar for notifications */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
