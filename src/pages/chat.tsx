@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { createRoom } from "../services/roomService.tsx";
 import { Timestamp } from 'firebase/firestore';
 import { Room } from '../common/interfaces.tsx';
@@ -9,7 +9,6 @@ import {
   Button,
   TextField,
   Typography,
-  Container,
   Paper,
   Box,
   Card,

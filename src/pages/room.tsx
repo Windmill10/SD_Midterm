@@ -8,18 +8,17 @@ import MessageInput from "../components/chat/messageinput";
 import { useUserMetadata } from "../common/findUser";
 import MessageHistory from "../components/chat/messageHistory.tsx";
 import { Chatrooms } from "../components/chat/chatrooms.tsx";
-import { Box, Paper, Typography, IconButton, InputBase, Button, Divider, Alert, AlertColor, Icon } from "@mui/material"; // Added Alert, AlertColor
+import { Box, Paper, Typography, IconButton, InputBase, Divider, Alert, AlertColor } from "@mui/material"; // Removed Button, Icon
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 import Snackbar from "@mui/material/Snackbar";
 import SearchIcon from '@mui/icons-material/Search';
-import { Search } from "@mui/icons-material";
 
 const RoomPage = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const [newMemberEmail, setNewMemberEmail] = useState("");
   const [room, setRoom] = useState<Room | null>(null);
   const [loadingRooms, setLoadingRooms] = useState(true);
-  const { userMetadata, loading, refetch } = useUserMetadata();
+  const { userMetadata, loading } = useUserMetadata();
 
   // Snackbar state
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -28,12 +27,10 @@ const RoomPage = () => {
 
   //serach message states
   const [targetMessage, setTargetMessage] = useState<string>("");
-  const [searching, setSearching] = useState(false);
 
   const handleSearchMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!targetMessage.trim()) return;
-    setSearching(true);
     setTargetMessage(targetMessage);
   }
   useEffect(() => {
@@ -84,7 +81,7 @@ const RoomPage = () => {
   };
 
   // Function to close the snackbar
-  const handleSnackbarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+  const handleSnackbarClose = (_event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
     }

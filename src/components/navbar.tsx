@@ -1,11 +1,10 @@
-
 import { Link } from 'react-router-dom'
 import './navbar.css'
 import { useAuth } from "../context/AuthContext.tsx";
 import { signOut } from "firebase/auth";
 import { auth } from '../config/firebase'; // Import the pre-initialized auth instance
 import { useNavigate } from 'react-router-dom';
-import Button from '@mui/material/Button';
+
 const Navbar = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();

@@ -1,4 +1,4 @@
-import { collection, addDoc, doc, updateDoc, orderBy, getDoc, onSnapshot, query, where, getDocs, arrayUnion, Timestamp, setDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, orderBy, onSnapshot, query, getDocs, arrayUnion, Timestamp, setDoc } from 'firebase/firestore'; // Removed getDoc, where
 import { firestore } from '../config/firebase';
 import { User } from '../common/interfaces';
 import { Room, Message } from '../common/interfaces';
@@ -159,14 +159,17 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
     console.log("This browser does not support desktop notification");
     return false;
   }
+  // If permission is already granted, return true
   if (Notification.permission === "granted") {
     console.log("Notification permission already granted");
-    return false;
+    return true; // <-- Changed from false to true
   }
+  // If permission is not denied, request it
   if (Notification.permission !== "denied") {
     const permission = await Notification.requestPermission();
     return permission === "granted";
   }
+  // If permission is denied, return false
   return false;
 }  
 
@@ -190,8 +193,8 @@ export const showMessageNotification = (
   const title = `${senderName} ${roomName ? `in ${roomName}` : ''}`;
   const options: NotificationOptions = {
     body: message,
-    icon: avatar || '/favicon.ico',
-    badge: '/favicon.ico',
+    icon: avatar,
+    //badge: '/favicon.ico',
     data: { timestamp: Date.now() },
   };
 

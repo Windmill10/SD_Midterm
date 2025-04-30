@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Paper, Typography, Avatar, Stack, CircularProgress, Divider } from '@mui/material'; // Import MUI components (Added Divider)
+import { Box, Paper, Typography, Avatar, Stack, CircularProgress } from '@mui/material'; // Removed Divider
 import { requestNotificationPermission, showMessageNotification, subscribeToMessages } from '../../services/roomService';
 import { Message, User } from '../../common/interfaces';
 import { findUserById } from '../../common/findUser'; // Assuming this function returns Promise<User | null>
-import Button  from "@mui/material/Button"
 import {IconButton} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { removeMessageFromRoom } from '../../services/roomService';

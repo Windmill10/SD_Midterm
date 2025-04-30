@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Avatar, Box, CircularProgress, Typography, Button, TextField, Paper, Stack, IconButton, Snackbar, Alert, AlertColor, Grid, Divider, Chip } from '@mui/material';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Avatar, Box, CircularProgress, Typography, Button, TextField, Paper, Stack, IconButton, Snackbar, Alert, AlertColor, Divider, Chip, Container } from '@mui/material';
+import { Grid } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -9,7 +10,6 @@ import { useUserMetadata } from '../common/findUser';
 import { updateUserProfile, uploadProfilePhoto } from '../services/userService';
 import { User } from '../common/interfaces';
 import { findUserById } from '../common/findUser';
-import { Container } from '@mui/material';
 
 const ProfilePage = () => {
   const { userMetadata, loading, refetch } = useUserMetadata();
@@ -26,42 +26,35 @@ const ProfilePage = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<AlertColor>("success");
 
+  // Function to fetch friends data
+  const fetchFriends = useCallback(async () => {
+    if (userMetadata?.friends && userMetadata.friends.length > 0) {
+      setLoadingFriends(true);
+      try {
+        const friendPromises = userMetadata.friends.map(friendId => findUserById(friendId));
+        const friendData = await Promise.all(friendPromises);
+        setFriends(friendData.filter((friend): friend is User => friend !== null));
+      } catch (error) {
+        console.error("Error fetching friends:", error);
+        setSnackbarMessage('Error fetching friends list.');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      } finally {
+        setLoadingFriends(false);
+      }
+    } else {
+      setFriends([]);
+    }
+  }, [userMetadata?.friends]);
+
   // Populate state when userMetadata loads or changes
   useEffect(() => {
     if (userMetadata) {
       setDisplayName(userMetadata.displayName || '');
       setDescription(userMetadata.description || '');
-      
-      // Fetch friends data when userMetadata changes
       fetchFriends();
     }
-  }, [userMetadata]);
-  
-  // Function to fetch friends data
-  const fetchFriends = async () => {
-    if (!userMetadata?.friends?.length) {
-      setFriends([]);
-      return;
-    }
-    
-    setLoadingFriends(true);
-    try {
-      const friendsData = await Promise.all(
-        userMetadata.friends.map(friendId => findUserById(friendId))
-      );
-      
-      // Filter out any null results (users not found)
-      const validFriends = friendsData.filter(
-        (friend): friend is User => friend !== null
-      );
-      
-      setFriends(validFriends);
-    } catch (error) {
-      console.error("Error fetching friends data:", error);
-    } finally {
-      setLoadingFriends(false);
-    }
-  };
+  }, [userMetadata, fetchFriends]);
 
   const handleEditToggle = () => {
     if (isEditing) {
@@ -142,7 +135,7 @@ const ProfilePage = () => {
     }
   };
 
-  const handleSnackbarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+  const handleSnackbarClose = (_event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
     }
@@ -360,9 +353,9 @@ const ProfilePage = () => {
                 </Button>
               </Box>
             ) : (
-              <Grid container spacing={1}> {/* Reduced spacing */}
+              <Grid container spacing={2}>
                 {friends.map((friend) => (
-                  <Grid item xs={12} key={friend.uid}>
+                  <Grid key={friend.uid}>
                     <Paper 
                       elevation={1}
                       sx={{
