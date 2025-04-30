@@ -181,11 +181,12 @@ export const showMessageNotification = (
   onClick?: () => void
 ) => {
   // Check if we can show notifications
-  if (
-    !('Notification' in window) ||
-    Notification.permission !== 'granted' ||
-    document.visibilityState === 'visible'
-  ) {
+  if (!("Notification" in window) || Notification.permission !== "granted" ) {
+    console.log("This browser does not support desktop notification");
+    return;
+  }
+  if(document.visibilityState === "visible") {
+    console.log("Window is in focus, not showing notification");
     return;
   }
 
@@ -197,7 +198,6 @@ export const showMessageNotification = (
     //badge: '/favicon.ico',
     data: { timestamp: Date.now() },
   };
-
   const notification = new Notification(title, options);
   
   if (onClick) {
