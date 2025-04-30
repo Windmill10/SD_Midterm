@@ -215,7 +215,6 @@ const ChatPage = () => {
             maxHeight: 440,
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
             alignItems: 'center',
           }}>
             {userMetadata ? (

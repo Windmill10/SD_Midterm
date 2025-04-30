@@ -5,6 +5,7 @@ import { Room, Message } from '../common/interfaces';
 import { findUserByEmail } from '../common/findUser';
 import { deleteDoc } from 'firebase/firestore';
 
+
 export const createRoom = async (room: Room, userMetadata: User) => {
   try {
     if (userMetadata) {
@@ -152,3 +153,58 @@ export const removeMessageFromRoom = async (roomId: string, messageId: string) =
     throw error;
   }
 }
+
+export const requestNotificationPermission = async (): Promise<boolean> => {
+  if(!("Notification" in window)) {
+    console.log("This browser does not support desktop notification");
+    return false;
+  }
+  if (Notification.permission === "granted") {
+    console.log("Notification permission already granted");
+    return false;
+  }
+  if (Notification.permission !== "denied") {
+    const permission = await Notification.requestPermission();
+    return permission === "granted";
+  }
+  return false;
+}  
+
+export const showMessageNotification = (
+  senderName: string,
+  message: string,
+  avatar?: string,
+  roomName?: string,
+  onClick?: () => void
+) => {
+  // Check if we can show notifications
+  if (
+    !('Notification' in window) ||
+    Notification.permission !== 'granted' ||
+    document.visibilityState === 'visible'
+  ) {
+    return;
+  }
+
+  // Create notification
+  const title = `${senderName} ${roomName ? `in ${roomName}` : ''}`;
+  const options: NotificationOptions = {
+    body: message,
+    icon: avatar || '/favicon.ico',
+    badge: '/favicon.ico',
+    data: { timestamp: Date.now() },
+  };
+
+  const notification = new Notification(title, options);
+  
+  if (onClick) {
+    notification.onclick = () => {
+      window.focus();
+      onClick();
+      notification.close();
+    };
+  }
+
+  // Auto close after 5 seconds
+  setTimeout(() => notification.close(), 5000);
+};

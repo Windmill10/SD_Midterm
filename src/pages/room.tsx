@@ -263,7 +263,7 @@ const RoomPage = () => {
             minHeight: 0, // Important for flexbox scrolling
           }}
         >
-          <MessageHistory roomId={room.roomId} currentUserId={userMetadata.uid} targetMessage={targetMessage} />
+          <MessageHistory roomId={room.roomId} currentUserId={userMetadata.uid} targetMessage={targetMessage} roomName={room.name} />
         </Box>
         {/* Message input at bottom */}
         <Box

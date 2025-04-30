@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Paper, Typography, Avatar, Stack, CircularProgress, Divider } from '@mui/material'; // Import MUI components (Added Divider)
-import { subscribeToMessages } from '../../services/roomService';
+import { requestNotificationPermission, showMessageNotification, subscribeToMessages } from '../../services/roomService';
 import { Message, User } from '../../common/interfaces';
 import { findUserById } from '../../common/findUser'; // Assuming this function returns Promise<User | null>
 import Button  from "@mui/material/Button"
@@ -13,15 +13,25 @@ interface MessageHistoryProps {
   roomId: string;
   currentUserId: string; // Added prop
   targetMessage: string; // Search term
+  roomName?: string
 }
 
-const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, targetMessage }) => {
+const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, targetMessage, roomName="Chat" }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [messageUsers, setMessageUsers] = useState<{ [senderId: string]: User | null }>({});
   const messagesEndRef = useRef<HTMLDivElement>(null); // For scrolling to bottom
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null); // State to track hovered message
-
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const previousMessagesLengthRef = useRef(0);
+  
+  useEffect(() => {
+    const setupNotifications = async () => {
+      const granted = await requestNotificationPermission();
+      setNotificationsEnabled(granted);
+    }
+    setupNotifications();
+  }, [])
   // Filter messages based on targetMessage
   const filteredMessages = targetMessage
     ? messages.filter(message =>
@@ -38,13 +48,44 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, 
     }
   }, [messages, isSearching]); // Depend on isSearching
 
-  // Effect to subscribe to messages
+  useEffect(() => {
+    const setupNotifications = async () => {
+      const granted = await requestNotificationPermission();
+      setNotificationsEnabled(granted);
+    };
+    
+    setupNotifications(); // Actually call the function
+  }, []);
+  
+  // Then, update the message subscription useEffect:
   useEffect(() => {
     setLoading(true);
-    setMessageUsers({}); // Reset users when room changes
+    setMessageUsers({});
+    
     const unsubscribe = subscribeToMessages(
       roomId,
       (newMessages) => {
+        // Only show notification if there are new messages
+        if (newMessages.length > previousMessagesLengthRef.current && previousMessagesLengthRef.current > 0) {
+          // Get only the new messages
+          const newestMessages = newMessages.slice(previousMessagesLengthRef.current);
+          
+          // For each new message not from current user, show notification
+          newestMessages.forEach(async (message) => {
+            if (message.senderId !== currentUserId && notificationsEnabled) {
+              const sender = await findUserById(message.senderId);
+              showMessageNotification(
+                sender?.displayName || "Unknown", 
+                message.text, 
+                sender?.photoURL, 
+                roomName
+              );
+            }
+          });
+        }
+        
+        // Update message length reference for next time
+        previousMessagesLengthRef.current = newMessages.length;
         setMessages(newMessages);
         setLoading(false);
       },
@@ -53,8 +94,9 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, 
         setLoading(false);
       }
     );
+    
     return () => unsubscribe();
-  }, [roomId]);
+  }, [roomId, roomName, currentUserId, notificationsEnabled]);
 
   // Effect to fetch user data for senders
   useEffect(() => {
