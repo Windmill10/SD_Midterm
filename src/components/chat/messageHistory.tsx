@@ -6,6 +6,7 @@ import { findUserById } from '../../common/findUser'; // Assuming this function 
 import {IconButton} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { removeMessageFromRoom } from '../../services/roomService';
+import "animate.css";
 
 // Define props to include the current user's ID
 interface MessageHistoryProps {
@@ -213,6 +214,7 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, 
             {/* Message Bubble */}
             <Paper
               elevation={1}
+              className="animate__animated animate__bounce"
               sx={{
                 p: message.type === 'gif' ? 0.5 : 1.5, // Less padding for GIFs
                 borderRadius: isCurrentUser ? '20px 20px 5px 20px' : '20px 20px 20px 5px',
@@ -223,6 +225,7 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, 
                 flexDirection: 'column',
                 alignItems: 'start',
                 maxWidth: '75%', // Limit bubble width
+
               }}
             >
               {/* Sender Name */}
@@ -243,8 +246,8 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, 
                   style={{
                     maxWidth: '250px', // Limit GIF width
                     maxHeight: '200px', // Limit GIF height
-                    borderRadius: '16px', // Match bubble radius slightly
-                    display: 'block', // Ensure it behaves like a block element
+                    borderRadius: '16px', 
+                    display: 'block',
                   }}
                 />
               ) : (

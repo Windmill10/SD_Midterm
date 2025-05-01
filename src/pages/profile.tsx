@@ -346,7 +346,7 @@ const ProfilePage = () => {
                 <Button 
                   variant="outlined" 
                   component="a" 
-                  href="/chat"
+                  href="/messages"
                   sx={{ mt: 2 }}
                 >
                   Go to chat to add friends

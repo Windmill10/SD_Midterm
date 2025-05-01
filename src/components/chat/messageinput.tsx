@@ -11,7 +11,8 @@ import { IconButton } from '@mui/material'; // Import IconButton
 interface MessageInputProps {
   roomId: string;
   user: User;
-  onToggleGifPicker: () => void; // Add prop to toggle GIF picker
+  // Update the type definition to expect a non-optional event
+  onToggleGifPicker: (event: React.MouseEvent<HTMLButtonElement>) => void 
 }
 
 const MessageInput: React.FC<MessageInputProps> = (props) => {
