@@ -4,7 +4,7 @@ import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { User } from '../common/interfaces';
 import { arrayUnion } from 'firebase/firestore';
 
-export const updateUserProfile = async (userId: string, data: Partial<Pick<User, 'displayName' | 'description' | 'photoURL'>>): Promise<void> => {
+export const updateUserProfile = async (userId: string, data: Partial<Pick<User, 'displayName' | 'description' | 'photoURL' | 'phoneNumber' | 'address'>>): Promise<void> => {
   if (!userId) {
     throw new Error("User ID is required to update profile.");
   }

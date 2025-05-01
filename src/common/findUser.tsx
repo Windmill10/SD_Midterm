@@ -25,6 +25,8 @@ export const findUserByEmail = async (email: string) => {
         description: userData.description || '',
         friends: userData.friends || [],
         chatrooms: userData.chatrooms || [],
+        phoneNumber: userData.phoneNumber || '', // Add phone number
+        address: userData.address || '',         // Add address
         // Add any other fields from your User interface
       };
         //console.log("User found:", user);
@@ -54,6 +56,8 @@ export const findUserById = async (uid: string) => {
             description: userData.description || '',
             friends: userData.friends || [],
             chatrooms: userData.chatrooms || [],
+            phoneNumber: userData.phoneNumber || '', // Add phone number
+            address: userData.address || '',         // Add address
             // Add any other fields from your User interface
         };
             //console.log("User found:", user);

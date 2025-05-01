@@ -32,6 +32,8 @@ const RegisterPage = () => {
               photoURL: "",
               friends: [],
               chatrooms: [],
+              phoneNumber: "", // Initialize phone number
+              address: "",     // Initialize address
             }
             await setDoc(doc(firestore, "users", user.uid), user);
             navigate("/");

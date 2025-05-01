@@ -92,6 +92,8 @@ const LoginPage = () => {
                     photoURL: user.photoURL || '',
                     friends: [],
                     chatrooms: [],
+                    phoneNumber: "", // Initialize phone number
+                    address: "",     // Initialize address
                   };
                   await setDoc(userRef, newUser);
                   console.log(`User ${user.uid} created in Firestore.`);

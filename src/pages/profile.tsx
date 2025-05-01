@@ -6,6 +6,8 @@ import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import PeopleIcon from '@mui/icons-material/People';
+import PhoneIcon from '@mui/icons-material/Phone';
+import HomeIcon from '@mui/icons-material/Home';
 import { useUserMetadata } from '../common/findUser';
 import { updateUserProfile, uploadProfilePhoto } from '../services/userService';
 import { User } from '../common/interfaces';
@@ -16,6 +18,8 @@ const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [description, setDescription] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [address, setAddress] = useState('');
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [friends, setFriends] = useState<User[]>([]);
@@ -52,6 +56,8 @@ const ProfilePage = () => {
     if (userMetadata) {
       setDisplayName(userMetadata.displayName || '');
       setDescription(userMetadata.description || '');
+      setPhoneNumber(userMetadata.phoneNumber || '');
+      setAddress(userMetadata.address || '');
       fetchFriends();
     }
   }, [userMetadata, fetchFriends]);
@@ -62,6 +68,8 @@ const ProfilePage = () => {
       if (userMetadata) {
         setDisplayName(userMetadata.displayName || '');
         setDescription(userMetadata.description || '');
+        setPhoneNumber(userMetadata.phoneNumber || '');
+        setAddress(userMetadata.address || '');
       }
     }
     setIsEditing(!isEditing);
@@ -107,12 +115,18 @@ const ProfilePage = () => {
   const handleSave = async () => {
     if (!userMetadata) return;
 
-    const updatedData: Partial<Pick<User, 'displayName' | 'description'>> = {};
+    const updatedData: Partial<Pick<User, 'displayName' | 'description' | 'phoneNumber' | 'address'>> = {};
     if (displayName !== userMetadata.displayName) {
       updatedData.displayName = displayName;
     }
     if (description !== userMetadata.description) {
       updatedData.description = description;
+    }
+    if (phoneNumber !== userMetadata.phoneNumber) {
+      updatedData.phoneNumber = phoneNumber;
+    }
+    if (address !== userMetadata.address) {
+      updatedData.address = address;
     }
 
     if (Object.keys(updatedData).length === 0) {
@@ -253,6 +267,26 @@ const ProfilePage = () => {
                     Email: {userMetadata?.email} (cannot be changed)
                   </Typography>
                   <TextField
+                    label="Phone Number"
+                    variant="outlined"
+                    fullWidth
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="Enter your phone number"
+                    InputProps={{ startAdornment: <PhoneIcon fontSize="small" sx={{ mr: 1, color: 'action.active' }} /> }}
+                  />
+                  <TextField
+                    label="Address"
+                    variant="outlined"
+                    fullWidth
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Enter your address"
+                    multiline
+                    rows={2}
+                    InputProps={{ startAdornment: <HomeIcon fontSize="small" sx={{ mr: 1, color: 'action.active', alignSelf: 'flex-start' }} /> }}
+                  />
+                  <TextField
                     label="About Me"
                     variant="outlined"
                     fullWidth
@@ -271,6 +305,16 @@ const ProfilePage = () => {
                   <Typography variant="body1" color="text.secondary" textAlign="center">
                     {userMetadata?.email}
                   </Typography>
+                  {phoneNumber && (
+                    <Typography variant="body1" color="text.secondary" textAlign="center" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                      <PhoneIcon fontSize="small" /> {phoneNumber}
+                    </Typography>
+                  )}
+                  {address && (
+                    <Typography variant="body1" color="text.secondary" textAlign="center" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                      <HomeIcon fontSize="small" /> {address}
+                    </Typography>
+                  )}
                   <Typography 
                     variant="body1" 
                     sx={{ 

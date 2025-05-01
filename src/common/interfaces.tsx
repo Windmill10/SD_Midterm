@@ -24,4 +24,6 @@ export interface User {
   chatrooms: string[],
   photoURL: string,
   friends: string[],
+  phoneNumber?: string, // Add optional phone number
+  address?: string,     // Add optional address
 }

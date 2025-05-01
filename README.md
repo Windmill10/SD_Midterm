@@ -3,7 +3,7 @@
 ## Overview
 This is a simple chatroom for chatting with friends. Built with React + Vite + TypeScript + Firebase. Utilizing Material UI and CSS.anmimate for UI design. The Navbar provides all necessary pages for users to navigate.
 
-## Basic feature
+## Basic featurea
 
 ### Membership Mechanism
 - Supports gmail sign-in and sign-out.
@@ -40,8 +40,15 @@ This is a simple chatroom for chatting with friends. Built with React + Vite + T
  - Alert scripts and console logs are used to debug the code throughout the project
 
  ## Bonus components
- - User profile page where users can edit their profile information and avatar
+ - User profile page where users can edit their profile information (name, description, phone number, address) and avatar
  - Profile picture is uploaded to Firebase storage
  - Users can hover over a message and unsend it
  - Users can search for messages in the chatroom
  - Users can send gifs like any other message
+
+ ## Additional features
+
+ - Used Material UI theme for consistent design
+ - Supports adding friends and members to chatroom by email
+ - Signing in with Google account will automatically create a user account in the database with corresponding user information
+ - Auto scroll to the bottom of the chatroom when new messages are sent
