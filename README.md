@@ -1,101 +1,47 @@
-# React + TypeScript + Vite
+# Website features 
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Overview
+This is a simple chatroom for chatting with friends. Built with React + Vite + TypeScript + Firebase. Utilizing Material UI and CSS.anmimate for UI design. The Navbar provides all necessary pages for users to navigate.
 
-Currently, two official plugins are available:
+## Basic feature
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Membership Mechanism
+- Supports gmail sign-in and sign-out.
+- Support google account sign-in and sign-out, and automatically creates a user account in the database.
 
-## Expanding the ESLint configuration
+### Host your Firebase page
+- Is hosted with Firebase
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Database read/write
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+- Used firestore with proper security rules to read and write data.
+- Firestore is used to store user data, chatroom data, and messages.
+- Firestore storage is used to store user profile images.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### RWD
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- The website is responsive and can be used on mobile devices.
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+### GIT
+  ![Git log](git_lg.png)
+### Chatroom
 
-component hierarchy
-```mermaid
-App
-├── AuthProvider (context)
-├── Router
-│   ├── Navbar (persistent)
-│   └── Routes
-│       ├── AuthPage (public)
-│       │   ├── SignUp / SignIn
-│       │   └── GoogleSignIn
-│       └── HomePage (protected with AuthGuard)
-│           ├── RoomList
-│           │   ├── RoomItem(s)
-│           │   └── CreateRoom (Modal)
-│           └── ChatRoomPage
-│               ├── ChatWindow
-│               │   └── MessageList
-│               │       └── MessageItem(s)
-│               └── MessageInput
-│                   └── EmojiPicker
-```
-Bonus Components (at most 10%)
-- User profile (1%)
-- Profile picture (1%)
-- Send image (1%)
-- Send video (1%)
-- Chatbot (2%)
-- Block User (2%)
-- Unsend message (3%)
-- Search for message (3%)
-- Send gif from Tenor API (3%)
+ - Users can access and create chatrooms in message page
+ - All chatrooms are private and invite only
+ - Chatrooms support group chat, adding members to chatroom by email, message searching, message history, and message unsending.
 
-/rooms
-  /{roomId}
-    - name: string
-    - description: string
-    - createdAt: timestamp
-    - createdBy: userId
-    - isPrivate: boolean
-    /members
-      /{userId}: true
-    /messages
-      /{messageId}
-        - text: string
-        - senderId: userId
-        - timestamp: timestamp
+
+ ## Advanced components
+
+ - Is built with React + Vite
+ - Supports google sign-in and sign-out
+ - Supports chrome notifications
+ - CSS animation is used in chatroom, messages "bounce" when new messages are rendered
+ - Alert scripts and console logs are used to debug the code throughout the project
+
+ ## Bonus components
+ - User profile page where users can edit their profile information and avatar
+ - Profile picture is uploaded to Firebase storage
+ - Users can hover over a message and unsend it
+ - Users can search for messages in the chatroom
+ - Users can send gifs like any other message
