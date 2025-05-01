@@ -1,6 +1,18 @@
+// filepath: /Users/lee_eason/CS/SD/Midterm/firestore.rules
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // Helper function to check if the user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if the requesting user is a member of a specific room
+    // Checks for existence of the user's document in the members subcollection
+    function isRoomMember(roomId) {
+      return isAuthenticated() && exists(/databases/$(database)/documents/rooms/$(roomId)/members/$(request.auth.uid));
+    }
 
     // Users can read any profile, but only write their own
     match /users/{userId} {
@@ -13,7 +25,8 @@ service cloud.firestore {
 
     // Allow authenticated users to create rooms
     match /rooms/{roomId} {
-      allow read: if request.auth != null; // Or more specific: check if user is a member
+      // Allow reading room details only if the user is a member
+      allow read: if isRoomMember(roomId);
       allow create: if request.auth != null;
       // Allow update/delete only by creator or admin (more complex rule needed)
       allow update, delete: if false; // Start restrictive
