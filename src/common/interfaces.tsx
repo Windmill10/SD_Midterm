@@ -5,6 +5,7 @@ export interface Message {
   text: string,
   senderId: string,
   createdAt: Timestamp,
+  type?: 'text' | 'gif'; // Add message type
 }
 export interface Room {
   name: string,

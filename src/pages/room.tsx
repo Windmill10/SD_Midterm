@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { firestore } from "../config/firebase";
 import { Room } from "../common/interfaces";
-import { addMemberToRoomByEmail } from "../services/roomService";
+import { addMemberToRoomByEmail, addMessageToRoom } from "../services/roomService";
 import MessageInput from "../components/chat/messageinput";
 import { useUserMetadata } from "../common/findUser";
 import MessageHistory from "../components/chat/messageHistory.tsx";
 import { Chatrooms } from "../components/chat/chatrooms.tsx";
-import { Box, Paper, Typography, IconButton, InputBase, Divider, Alert, AlertColor } from "@mui/material"; // Removed Button, Icon
+import { Box, Paper, Typography, IconButton, InputBase, Divider, Alert, AlertColor, Popover } from "@mui/material";
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 import Snackbar from "@mui/material/Snackbar";
 import SearchIcon from '@mui/icons-material/Search';
+import GifPicker from "gif-picker-react";
 
 const RoomPage = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -25,14 +26,29 @@ const RoomPage = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<AlertColor>("success");
 
-  //serach message states
+  // Search message states
   const [targetMessage, setTargetMessage] = useState<string>("");
+
+  // State for GIF Picker visibility and anchor element
+  const [gifPickerAnchorEl, setGifPickerAnchorEl] = useState<HTMLButtonElement | null>(null);
+
+  const handleToggleGifPicker = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setGifPickerAnchorEl(gifPickerAnchorEl ? null : event.currentTarget);
+  };
+
+  const handleCloseGifPicker = () => {
+    setGifPickerAnchorEl(null);
+  };
+
+  const openGifPicker = Boolean(gifPickerAnchorEl);
+  const gifPickerId = openGifPicker ? 'gif-picker-popover' : undefined;
 
   const handleSearchMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!targetMessage.trim()) return;
     setTargetMessage(targetMessage);
-  }
+  };
+
   useEffect(() => {
     const fetchRoom = async () => {
       if (!roomId) return;
@@ -88,6 +104,26 @@ const RoomPage = () => {
     setSnackbarOpen(false);
   };
 
+  // Function to send GIF
+  const handleSendGif = async (gif: { url: string }) => {
+    if (!roomId || !userMetadata) return;
+    try {
+      await addMessageToRoom(roomId, {
+        id: crypto.randomUUID(),
+        text: gif.url, // Use the GIF URL as text
+        createdAt: Timestamp.now(),
+        senderId: userMetadata.uid,
+        type: 'gif', // Set type to gif
+      });
+      handleCloseGifPicker(); // Close picker after sending
+    } catch (error) {
+      console.error("Error sending GIF:", error);
+      setSnackbarMessage("Failed to send GIF.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
+  };
+
   if (loadingRooms || loading) {
     return <div>Loading...</div>; // Consider using MUI Skeleton or CircularProgress here
   }
@@ -121,11 +157,10 @@ const RoomPage = () => {
           alignItems: 'center',
           height: '100%', // Adjusted for consistency
           mx: 2,
-          // pl: 1, // Removed padding left for centering
           borderRadius: 2,
           overflowY: 'auto',
-          minHeight: 200, // Consider removing if height: 100% is used
-          maxHeight: 865, // Consider removing if height: 100% is used
+          minHeight: 200,
+          maxHeight: 865,
         }}
         square
       >
@@ -133,10 +168,9 @@ const RoomPage = () => {
           Chatrooms
         </Typography>
         <Divider sx={{ width: '100%' }} />
-        <Box sx={{ flex: 1, overflowY: 'auto', width: '90%' }}> {/* Centered content */}
+        <Box sx={{ flex: 1, overflowY: 'auto', width: '90%' }}>
           <Chatrooms {...userMetadata} />
         </Box>
-
       </Paper>
 
       {/* Main chat area */}
@@ -145,8 +179,8 @@ const RoomPage = () => {
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          height: 'calc(100vh - 64px - 35px - 2px)', // Calculate height based on parent Box padding/margin
-          width: { xs: 'calc(100vw - 200px - 32px)', sm: 'calc(100vw - 300px - 32px)' }, // Adjusted width calculation
+          height: 'calc(100vh - 64px - 35px - 2px)',
+          width: { xs: 'calc(100vw - 200px - 32px)', sm: 'calc(100vw - 300px - 32px)' },
           borderRadius: 2,
         }}
       >
@@ -252,12 +286,12 @@ const RoomPage = () => {
         {/* Message history */}
         <Box
           sx={{
-            flex: 1, // Takes remaining space
+            flex: 1,
             px: { xs: 0.5, sm: 3 },
             py: 2,
             overflowY: 'auto',
             bgcolor: 'background.default',
-            minHeight: 0, // Important for flexbox scrolling
+            minHeight: 0,
           }}
         >
           <MessageHistory roomId={room.roomId} currentUserId={userMetadata.uid} targetMessage={targetMessage} roomName={room.name} />
@@ -270,10 +304,36 @@ const RoomPage = () => {
             bgcolor: 'background.paper',
             borderTop: '1px solid',
             borderColor: 'divider',
+            position: 'relative',
           }}
         >
-          <MessageInput roomId={room.roomId} user={userMetadata} />
+          <MessageInput
+            roomId={room.roomId}
+            user={userMetadata}
+            onToggleGifPicker={handleToggleGifPicker}
+          />
         </Box>
+        <Popover
+          id={gifPickerId}
+          open={openGifPicker}
+          anchorEl={gifPickerAnchorEl}
+          onClose={handleCloseGifPicker}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'center',
+          }}
+          transformOrigin={{
+            vertical: 'bottom',
+            horizontal: 'center',
+          }}
+          sx={{ mb: 1 }}
+        >
+          <GifPicker
+            tenorApiKey={import.meta.env.VITE_TENOR_API_KEY || ""}
+            onGifClick={handleSendGif}
+            width={350}
+          />
+        </Popover>
       </Box>
 
       {/* Snackbar for notifications */}
@@ -281,7 +341,7 @@ const RoomPage = () => {
         open={snackbarOpen}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} // Position snackbar
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert
           onClose={handleSnackbarClose}

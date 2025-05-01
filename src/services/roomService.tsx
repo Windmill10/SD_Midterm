@@ -81,7 +81,8 @@ export const addMessageToRoom = async (roomId: string, message: Message) => {
   try {
     const roomRef = doc(firestore, 'rooms', roomId);
     const messageRef = collection(roomRef, 'messages');
-    await addDoc(messageRef, message);
+    // Ensure type defaults to 'text' if not provided
+    await addDoc(messageRef, { ...message, type: message.type || 'text' });
     //console.log("Message added to room:", roomId, message);
   } catch (error) {
     console.error("Error adding message to room:", error);
@@ -103,6 +104,7 @@ export const getMessagesFromRoom = async (roomId: string): Promise<Message[]> =>
         text: data.text,
         senderId: data.senderId,
         createdAt: data.createdAt,
+        type: data.type || 'text', // Include type
       });
     }
     );
@@ -129,6 +131,7 @@ export const subscribeToMessages = (
         text: data.text,
         senderId: data.senderId,
         createdAt: data.createdAt,
+        type: data.type || 'text', // Include type
       });
     });
     callback(messages);
@@ -178,6 +181,7 @@ export const showMessageNotification = (
   message: string,
   avatar?: string,
   roomName?: string,
+  messageType?: 'text' | 'gif', // Add messageType parameter
   onClick?: () => void
 ) => {
   // Check if we can show notifications
@@ -192,8 +196,9 @@ export const showMessageNotification = (
 
   // Create notification
   const title = `${senderName} ${roomName ? `in ${roomName}` : ''}`;
+  const body = messageType === 'gif' ? 'Sent a GIF' : message; // Adjust body for GIFs
   const options: NotificationOptions = {
-    body: message,
+    body: body, // Use adjusted body
     icon: avatar,
     //badge: '/favicon.ico',
     data: { timestamp: Date.now() },

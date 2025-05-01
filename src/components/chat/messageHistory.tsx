@@ -34,6 +34,7 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, 
   // Filter messages based on targetMessage
   const filteredMessages = targetMessage
     ? messages.filter(message =>
+      message.type === 'text' && // Only search text messages
       message.text.toLowerCase().includes(targetMessage.toLowerCase())
     )
     : messages;
@@ -64,8 +65,8 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, 
     const unsubscribe = subscribeToMessages(
       roomId,
       (newMessages) => {
-        // Only show notification if there are new messages
-        if (newMessages.length > previousMessagesLengthRef.current && previousMessagesLengthRef.current > 0) {
+        // Only show notification if there are new messages and window not focused
+        if (newMessages.length > previousMessagesLengthRef.current && previousMessagesLengthRef.current > 0 && document.visibilityState !== 'visible') {
           // Get only the new messages
           const newestMessages = newMessages.slice(previousMessagesLengthRef.current);
           
@@ -77,7 +78,8 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, 
                 sender?.displayName || "Unknown", 
                 message.text, 
                 sender?.photoURL, 
-                roomName
+                roomName,
+                message.type // Pass the message type
               );
             }
           });
@@ -166,6 +168,7 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, 
               width: '100%',
               position: 'relative',
               gap: 1,
+              alignItems: 'flex-end', // Align items to bottom for consistency
             }}
           >
             {/* Unsend Button */}
@@ -182,6 +185,7 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, 
                 width: 28,
                 height: 28,
                 alignSelf: 'center',
+                mb: '20px', // Adjust margin to align better with bubble center
               }}
               aria-label="unsend message"
             >
@@ -189,63 +193,89 @@ const MessageHistory: React.FC<MessageHistoryProps> = ({ roomId, currentUserId, 
             </IconButton>)
             }
 
-            {/* Message Content Stack */}
-            <Stack
-              direction={isCurrentUser ? 'row-reverse' : 'row'}
-              spacing={1}
-              alignItems="flex-end"
-              sx={{ maxWidth: '100%' }} // Adjust max width if needed
-            >
-              {/* Avatar */}
+            {/* Avatar */}
+            {!isCurrentUser && (
               <Avatar
                 sx={{
                   width: 32,
                   height: 32,
-                  bgcolor: sender?.photoURL ? undefined : (isCurrentUser ? 'primary.main' : 'secondary.main'),
+                  bgcolor: sender?.photoURL ? undefined : 'secondary.main',
                   fontSize: '0.875rem',
+                  order: -1, // Ensure avatar is on the left for others
                 }}
                 src={sender?.photoURL || undefined}
                 alt={sender?.displayName ? `${sender.displayName}'s avatar` : 'User avatar'}
               >
                 {!sender?.photoURL ? sender?.displayName?.charAt(0).toUpperCase() : null}
               </Avatar>
+            )}
 
-              {/* Message Bubble */}
-              <Paper
-                elevation={1}
-                sx={{
-                  p: 1.5,
-                  borderRadius: isCurrentUser ? '20px 20px 5px 20px' : '20px 20px 20px 5px',
-                  bgcolor: isCurrentUser ? 'primary.light' : 'background.paper',
-                  color: isCurrentUser ? 'primary.contrastText' : 'text.primary',
-                  wordBreak: 'break-word',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'start'
-                }}
-              >
-                {/* Sender Name */}
-                {!isCurrentUser && sender?.displayName && (
-                  <Typography
-                    variant="caption"
-                    display="block"
-                    sx={{ mb: 0.5, fontWeight: 'bold', color: isCurrentUser ? 'inherit' : 'text.secondary' }}
-                  >
-                    {sender.displayName}
-                  </Typography>
-                )}
-                {/* Message Text */}
-                <Typography variant="body1">{message.text}</Typography>
-                {/* Timestamp */}
+            {/* Message Bubble */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: message.type === 'gif' ? 0.5 : 1.5, // Less padding for GIFs
+                borderRadius: isCurrentUser ? '20px 20px 5px 20px' : '20px 20px 20px 5px',
+                bgcolor: isCurrentUser ? 'primary.light' : 'background.paper',
+                color: isCurrentUser ? 'primary.contrastText' : 'text.primary',
+                wordBreak: 'break-word',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'start',
+                maxWidth: '75%', // Limit bubble width
+              }}
+            >
+              {/* Sender Name */}
+              {!isCurrentUser && sender?.displayName && (
                 <Typography
                   variant="caption"
                   display="block"
-                  sx={{ mt: 0.5, textAlign: 'right', opacity: 0.8, fontSize: '0.7rem' }}
+                  sx={{ mb: 0.5, fontWeight: 'bold', color: isCurrentUser ? 'inherit' : 'text.secondary' }}
                 >
-                  {message.createdAt?.toDate().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                  {sender.displayName}
                 </Typography>
-              </Paper>
-            </Stack>
+              )}
+              {/* Message Content */}
+              {message.type === 'gif' ? (
+                <img
+                  src={message.text}
+                  alt="GIF"
+                  style={{
+                    maxWidth: '250px', // Limit GIF width
+                    maxHeight: '200px', // Limit GIF height
+                    borderRadius: '16px', // Match bubble radius slightly
+                    display: 'block', // Ensure it behaves like a block element
+                  }}
+                />
+              ) : (
+                <Typography variant="body1">{message.text}</Typography>
+              )}
+              {/* Timestamp */}
+              <Typography
+                variant="caption"
+                display="block"
+                sx={{ mt: 0.5, textAlign: 'right', opacity: 0.8, fontSize: '0.7rem' }}
+              >
+                {message.createdAt?.toDate().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+              </Typography>
+            </Paper>
+
+            {/* Avatar */}
+            {isCurrentUser && (
+              <Avatar
+                sx={{
+                  width: 32,
+                  height: 32,
+                  bgcolor: sender?.photoURL ? undefined : 'primary.main',
+                  fontSize: '0.875rem',
+                  order: 1, // Ensure avatar is on the right for current user
+                }}
+                src={sender?.photoURL || undefined}
+                alt={sender?.displayName ? `${sender.displayName}'s avatar` : 'User avatar'}
+              >
+                {!sender?.photoURL ? sender?.displayName?.charAt(0).toUpperCase() : null}
+              </Avatar>
+            )}
           </Box>
         );
       })}
